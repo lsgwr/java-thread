@@ -1,5 +1,7 @@
 /***********************************************************
- * @Description : 
+ * @Description : 当一个线程访问object中的一个synchronized同步代
+ *                码块时，另一个线程仍然可以访问该object对象中的非
+ *                synchronized(this)同步代码块
  * @author      : 梁山广(Laing Shan Guang)
  * @date        : 2018/3/26 下午11:06
  * @email       : liangshanguang2@gmail.com
