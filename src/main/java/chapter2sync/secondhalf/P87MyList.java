@@ -4,7 +4,7 @@
  * @date        : 2018/4/6 上午11:52
  * @email       : liangshanguang2@gmail.com
  ***********************************************************/
-package chapter2sync;
+package chapter2sync.secondhalf;
 
 import java.util.ArrayList;
 import java.util.List;
