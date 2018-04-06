@@ -16,7 +16,7 @@ public class P130Service {
 
         while (continueRun == true) {
             synchronized (anyString) {
-                
+
             }
         }
         System.out.println("停下来了！");
