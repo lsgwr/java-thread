@@ -17,5 +17,5 @@ public class P118Run {
         P118ThreadB threadB = new P118ThreadB(service, userInfo);
         threadB.setName("b");
         threadB.start();
-    }
+}
 }
