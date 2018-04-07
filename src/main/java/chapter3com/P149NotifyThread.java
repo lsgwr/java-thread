@@ -17,7 +17,7 @@ public class P149NotifyThread extends Thread {
     public void run() {
         // notify一定要同步，不然会出IllegalMonitorStateException的错误
         synchronized (lock) {
-            // 随机选取一个线程进行唤醒
+            // 随机选取一个线程进行唤醒,唤醒全部线程用notifyAll
             lock.notify();
         }
     }
