@@ -12,7 +12,7 @@ import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
 
-public class L244Run {
+public class P247Run {
     private static Timer timer = new Timer();
 
     static public class MyTask extends TimerTask {
@@ -28,6 +28,7 @@ public class L244Run {
         String dateString = "2018-04-10 23:06:00";
         Date dateRef = sdf.parse(dateString);
         System.out.println("字符串时间为：" + dateRef.toLocaleString() + ", 当前时间为：" + new Date().toLocaleString());
-        timer.schedule(task, dateRef);
+        // 每4s执行一次
+        timer.schedule(task, dateRef, 4000);
     }
 }

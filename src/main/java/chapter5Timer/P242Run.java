@@ -1,5 +1,5 @@
 /***********************************************************
- * @Description : 定时时间早于当前时间，直接运行
+ * @Description : 
  * @author      : 梁山广(Laing Shan Guang)
  * @date        : 2018/4/10 下午10:59
  * @email       : liangshanguang2@gmail.com
@@ -12,7 +12,7 @@ import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
 
-public class L247Run {
+public class P242Run {
     private static Timer timer = new Timer();
 
     static public class MyTask extends TimerTask {
@@ -28,7 +28,6 @@ public class L247Run {
         String dateString = "2018-04-10 23:06:00";
         Date dateRef = sdf.parse(dateString);
         System.out.println("字符串时间为：" + dateRef.toLocaleString() + ", 当前时间为：" + new Date().toLocaleString());
-        // 每4s执行一次
-        timer.schedule(task, dateRef, 4000);
+        timer.schedule(task, dateRef);
     }
 }

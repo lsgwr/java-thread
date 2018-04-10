@@ -12,7 +12,7 @@ import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
 
-public class L246Run {
+public class P246Run {
     private static Timer timer = new Timer();
 
     static public class MyTask1 extends TimerTask {
