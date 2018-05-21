@@ -8,7 +8,7 @@ package Chapter01WalkingIntoJavaThread;
 
 import java.util.Date;
 
-public class SimpleJavaApp {
+public class P3SimpleJavaApp {
     public static void main(String[] args) throws InterruptedException {
         while (true) {
             System.out.println(new Date());
