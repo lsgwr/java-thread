@@ -1,4 +1,4 @@
 
 .idea/
-java-thread.iml
+*.iml
 target/
