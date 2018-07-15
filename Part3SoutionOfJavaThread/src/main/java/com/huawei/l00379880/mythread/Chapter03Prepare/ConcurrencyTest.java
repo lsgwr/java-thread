@@ -4,7 +4,7 @@
  * @date        : 2018/7/15 20:50
  * @email       : liangshanguang2@gmail.com
  ***********************************************************/
-package com.huawei.l00379880.mythread.CHapter03Prepare;
+package com.huawei.l00379880.mythread.Chapter03Prepare;
 
 import com.huawei.l00379880.mythread.annotations.ThreadNotSafe;
 import lombok.extern.slf4j.Slf4j;
