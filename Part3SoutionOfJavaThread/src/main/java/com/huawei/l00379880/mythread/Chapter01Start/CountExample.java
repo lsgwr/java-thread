@@ -4,7 +4,7 @@
  * @date        : 2018/7/15 11:21
  * @email       : liangshanguang2@gmail.com
  ***********************************************************/
-package Chapter01Start;
+package com.huawei.l00379880.mythread.Chapter01Start;
 
 import lombok.extern.slf4j.Slf4j;
 
