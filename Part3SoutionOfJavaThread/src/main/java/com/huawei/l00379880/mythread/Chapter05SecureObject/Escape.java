@@ -7,5 +7,20 @@
  ***********************************************************/
 package com.huawei.l00379880.mythread.Chapter05SecureObject;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class Escape {
+    private int thisCanBeEscape = 0;
+
+    private class InnerCls {
+        public InnerCls() {
+            // 在对象未完成构造之前就对外调用了，打印不出来信息
+            log.info("{}", Escape.this.thisCanBeEscape);
+        }
+    }
+
+    public static void main(String[] args) {
+        new Escape();
+    }
 }
