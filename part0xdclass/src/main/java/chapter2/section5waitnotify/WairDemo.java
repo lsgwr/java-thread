@@ -4,7 +4,7 @@
  * @date        : 2018-12-15 15:44
  * @email       : liangshanguang2@gmail.com
  ***********************************************************/
-package chapter2.section5;
+package chapter2.section5waitnotify;
 
 public class WairDemo implements Runnable {
     private static Object object = new Object();
