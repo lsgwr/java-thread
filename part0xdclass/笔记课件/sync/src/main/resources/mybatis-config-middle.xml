@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+    <settings>
+        <setting name="logImpl" value="STDOUT_LOGGING" />
+    </settings>
+    <typeAliases>
+        <typeAlias type="java.lang.Integer" alias="Integer"/>
+        <typeAlias alias="Long" type="java.lang.Long" />
+        <typeAlias alias="HashMap" type="java.util.HashMap" />
+        <typeAlias alias="LinkedHashMap" type="java.util.LinkedHashMap" />
+        <typeAlias alias="ArrayList" type="java.util.ArrayList" />
+        <typeAlias alias="LinkedList" type="java.util.LinkedList" />
+    </typeAliases>
+
+    <environments default="development">
+        <environment id="development">
+            <transactionManager type="JDBC"></transactionManager>
+            <dataSource type="com.xdclass.datasource.HikaricpDataSource">
+                <property name="jdbcUrl" value="jdbc:mysql://localhost:3306/middle?characterEncoding=UTF-8&amp;serverTimezone=Asia/Shanghai&amp;autoReconnect=true"></property>
+                <property name="username" value="root"></property>
+                <property name="password" value="123123"></property>
+                <property name="readOnly" value="false" />
+                <!-- 等待连接池分配连接的最大时长（毫秒），超过这个时长还 没可用的连接则发生SQLException， 缺省:30秒 -->
+                <property name="connectionTimeout" value="30000" />
+                <!-- 一个连接idle状态的最大时长（毫秒），超时则被释放（retired），缺省:10分钟 -->
+                <property name="idleTimeout" value="600000" />
+                <!-- 一个连接的生命时长（毫秒），超时而且没被使用则被释放（retired），缺省:30分钟，建议设置比数据库超时时长少30秒，参考MySQL wait_timeout参数（show variables like '%timeout%';） -->
+                <property name="maxLifetime" value="1800000" />
+                <!-- 连接池中允许的最大连接数。缺省值：10；推荐的公式：((core_count * 2) + effective_spindle_count) -->
+                <property name="maximumPoolSize" value="60" />
+            </dataSource>
+        </environment>
+    </environments>
+    <mappers>
+        <mapper resource="com/xdclass/middle/mapping/StudentMapper.xml"></mapper>
+    </mappers>
+</configuration>
