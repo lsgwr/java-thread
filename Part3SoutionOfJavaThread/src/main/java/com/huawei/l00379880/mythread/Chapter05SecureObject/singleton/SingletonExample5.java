@@ -8,7 +8,6 @@
 package com.huawei.l00379880.mythread.Chapter05SecureObject.singleton;
 
 import com.huawei.l00379880.mythread.annotations.ThreadNotRecommend;
-import com.huawei.l00379880.mythread.annotations.ThreadNotSafe;
 import com.huawei.l00379880.mythread.annotations.ThreadSafe;
 
 @ThreadSafe
@@ -21,7 +20,7 @@ public class SingletonExample5 {
     }
 
     /**
-     * 单例对象.Volatile可以限制指令重排
+     * 单例对象.Volatile可以限制指令重排+双重检测机制
      */
     private volatile static SingletonExample5 instance = null;
 
