@@ -1,6 +1,6 @@
 package chapter5communication.section1WaitNotifyNotifyAll;
 
-public class Demo1 {
+public class ThreadNotifyTest {
 
     private static volatile boolean flag = false;
 
@@ -43,6 +43,7 @@ public class Demo1 {
         new Thread(()->{
             flag = true;
             synchronized (obj) {
+                // 要是用notify()只能唤醒一个
                 obj.notifyAll();
             }
         }).start();
