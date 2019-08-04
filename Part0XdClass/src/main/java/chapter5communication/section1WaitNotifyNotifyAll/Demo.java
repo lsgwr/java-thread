@@ -1,5 +1,8 @@
 package chapter5communication.section1WaitNotifyNotifyAll;
 
+/**
+ * 这种方式虽然能实现线程通信，但是时间控制不准
+ */
 public class Demo {
 
     private static volatile boolean flag = false;
