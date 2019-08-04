@@ -31,11 +31,13 @@ public class Medium {
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
+                // 库存充足，通知消费者来消费
                 consumerCondition.signalAll();
             } else {
                 // 如果是，则通知生产者进行等待，
                 try {
                     System.out.println("新增库存---------> 库存已满：" + num);
+                    // 库存已满，通知生产者暂停生产
                     producerCondition.await();
                 } catch (InterruptedException e) {
                     e.printStackTrace();
