@@ -14,7 +14,8 @@ public class HungerSingleton {
     public static HungerSingleton getInstance() {
         return ourInstance;
     }
-
+    
+    // 默认构造函数务必是private
     private HungerSingleton() {
     }
 
