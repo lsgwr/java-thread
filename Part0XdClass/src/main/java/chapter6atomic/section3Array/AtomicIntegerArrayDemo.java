@@ -1,4 +1,4 @@
-package chapter6atomic.demo2;
+package chapter6atomic.section3Array;
 
 import java.util.concurrent.atomic.AtomicIntegerArray;
 

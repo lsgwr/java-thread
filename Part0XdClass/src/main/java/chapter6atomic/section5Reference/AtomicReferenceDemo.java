@@ -1,4 +1,4 @@
-package chapter6atomic.demo4;
+package chapter6atomic.section5Reference;
 
 import java.util.concurrent.atomic.AtomicReference;
 

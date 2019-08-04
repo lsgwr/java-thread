@@ -1,4 +1,4 @@
-package chapter6atomic.demo3;
+package chapter6atomic.section4Attribute;
 
 import java.util.concurrent.atomic.AtomicLongFieldUpdater;
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;

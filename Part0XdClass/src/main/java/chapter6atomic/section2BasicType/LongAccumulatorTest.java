@@ -1,11 +1,11 @@
-package chapter6atomic.demo1;
+package chapter6atomic.section2BasicType;
 
 import java.util.concurrent.atomic.LongAccumulator;
 
 /**
  * LongAccumulator Demo
  */
-public class Demo2 {
+public class LongAccumulatorTest {
 
     public static void main(String[] args) {
         //输入一个数字，如果比上一个输入的大，则直接返回，如果小，则返回上一个
