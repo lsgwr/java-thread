@@ -4,7 +4,7 @@ import java.util.concurrent.atomic.AtomicLongFieldUpdater;
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 
 /**
- * AtomicLongFieldUpdaterDemo
+ * 更新属性
  */
 public class AtomicLongFieldUpdaterDemo {
 

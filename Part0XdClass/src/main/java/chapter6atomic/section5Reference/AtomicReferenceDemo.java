@@ -3,7 +3,7 @@ package chapter6atomic.section5Reference;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
- * AtomicReferenceDemo
+ * 更新引用
  */
 public class AtomicReferenceDemo {
 
