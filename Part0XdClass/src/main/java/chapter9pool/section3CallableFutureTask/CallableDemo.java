@@ -13,7 +13,7 @@ import java.util.concurrent.FutureTask;
 public class CallableDemo implements Callable<String> {
     @Override
     public String call() throws Exception {
-        Thread.sleep(3000L);
+        Thread.sleep(1000L);
         return "1111";
     }
 
@@ -21,7 +21,7 @@ public class CallableDemo implements Callable<String> {
         CallableDemo callableDemo = new CallableDemo();
         FutureTask<String> stringFutureTask = new FutureTask<>(callableDemo);
         new Thread(stringFutureTask).start();
-        // 打印线程的返回值:3s后输出1111
+        // 打印线程的返回值:1s后输出1111
         System.out.println(stringFutureTask.get());
     }
 }
