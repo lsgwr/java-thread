@@ -3,7 +3,12 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.ThreadPoolExecutor.DiscardPolicy;
+/**
+*运行结果：
 
+task-0 is running.
+task-1 is running.
+*/
 public class DiscardPolicyDemo {
 
     private static final int THREADS_SIZE = 1;
