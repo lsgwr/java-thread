@@ -21,6 +21,7 @@ public class CountExample {
 
     public static void main(String[] args) {
         ExecutorService exec = Executors.newCachedThreadPool();
+        // 200个线程同时执行时，就会出现并发安全问题，结果一定不是5000
         final Semaphore semaphore = new Semaphore(threadTotal);
         for (int i = 0; i < clientTotal; i++) {
             exec.execute(() -> {
