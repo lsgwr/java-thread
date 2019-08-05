@@ -1,4 +1,4 @@
-package chapter7container.section1sync;
+package chapter7container.section2sync;
 
 import java.util.Iterator;
 import java.util.Vector;
