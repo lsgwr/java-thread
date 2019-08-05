@@ -8,6 +8,7 @@ public class Section1CountDownLatchDemo {
         CountDownLatch countDownLatch = new CountDownLatch(8);
         new Thread(()->{
             try {
+                // countDownLatch计数到0时就会跳出await()状态
                 countDownLatch.await();
             } catch (InterruptedException e) {
                 e.printStackTrace();
