@@ -9,5 +9,9 @@
 + Part5GuideOfJavaThreadDesignPattern :《Java多线程编程实战指南(设计模式篇)
 + Part6HeaFirstDesignPatterns:《Head First设计模式》
 + Part7TheZenOfDesignPatterns《设计模式之禅》
-### 
+
+
+## 参考博客
+
++ [Java多线程系列目录(共43篇)](https://www.cnblogs.com/skywang12345/p/java_threads_category.html)
 
