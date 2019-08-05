@@ -6,6 +6,11 @@ import java.util.concurrent.ThreadPoolExecutor.AbortPolicy;
 import java.util.concurrent.RejectedExecutionException;
 /**
 *运行结果：
+java.util.concurrent.RejectedExecutionException
+    at java.util.concurrent.ThreadPoolExecutor$AbortPolicy.rejectedExecution(ThreadPoolExecutor.java:1774)
+    at java.util.concurrent.ThreadPoolExecutor.reject(ThreadPoolExecutor.java:768)
+    at java.util.concurrent.ThreadPoolExecutor.execute(ThreadPoolExecutor.java:656)
+    at AbortPolicyDemo.main(AbortPolicyDemo.java:27)
 task-0 is running.
 task-1 is running.
 */
