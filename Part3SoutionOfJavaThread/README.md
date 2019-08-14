@@ -1,6 +1,22 @@
 # Java并发编程与高并发解决方案 收藏   
 
-> [课程地址](https://coding.imooc.com/class/195.html)
+## 官方资料
+
++ [课程地址](https://coding.imooc.com/class/195.html)
++ [课程资料及源码](https://coding.imooc.com/down/195.html)
+
+## 参考博客
+
++ [线程安全性详解](https://blog.51cto.com/zero01/2300671)
++ [如何安全发布对象](https://blog.51cto.com/zero01/2300908)
++ [线程安全策略](https://blog.51cto.com/zero01/2304422)
++ [J.U.C之AQS及其相关组件详解](https://blog.51cto.com/zero01/2306570)
++ [J.U.C组件拓展](https://blog.51cto.com/zero01/2306673)
++ [线程调度 - 线程池](https://blog.51cto.com/zero01/2306857)
++ [HashMap和ConcurrentHashMap](https://blog.51cto.com/zero01/2307070)
++ [应用限流及其常见算法](https://blog.51cto.com/zero01/2307787)
+
+## 课程目录
 
 + 第1章 课程准备（入门课程）
   > 课程目标：Java并发编程入门，适合没有并发编程经验的同学，本章首先从课程重点、特点、适合人群及学习收获几个方面对课程进行整体的介绍，然后会从一个实际的计数场景实现开始，给大家展示多线程并发时的线程不安全问题，让大家能够初体验到并发编程，之后会讲解并发和高并发的概念，并通过对比让大家明白到底什么是并发和...
