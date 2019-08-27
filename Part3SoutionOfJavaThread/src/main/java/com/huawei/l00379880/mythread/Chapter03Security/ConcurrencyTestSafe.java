@@ -4,9 +4,9 @@
  * @date        : 2018/7/15 20:50
  * @email       : liangshanguang2@gmail.com
  ***********************************************************/
-package com.huawei.l00379880.mythread.Chapter03Prepare;
+package com.huawei.l00379880.mythread.Chapter03Security;
 
-import com.huawei.l00379880.mythread.annotations.ThreadNotSafe;
+import com.huawei.l00379880.mythread.annotations.ThreadSafe;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.concurrent.CountDownLatch;
@@ -15,16 +15,16 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Semaphore;
 
 @Slf4j
-@ThreadNotSafe
-public class ConcurrencyTest {
+@ThreadSafe
+public class ConcurrencyTestSafe {
     /**
      * 请求总数
      */
-    public static int clientTotal = 1000;
+    public static int clientTotal = 5000;
     /**
      * 同时并发执行地线程数
      */
-    public static int threadTotal = 50;
+    public static int threadTotal = 200;
     /**
      * 计数
      */
@@ -53,7 +53,7 @@ public class ConcurrencyTest {
         log.info("count:{}", count);
     }
 
-    public static void add() {
+    public static synchronized void add() {
         count++;
     }
 }

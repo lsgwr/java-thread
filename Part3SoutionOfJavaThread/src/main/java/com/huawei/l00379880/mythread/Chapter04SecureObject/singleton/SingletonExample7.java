@@ -4,7 +4,7 @@
  * @date        : 2018/7/19 00:07
  * @email       : liangshanguang2@gmail.com
  ***********************************************************/
-package com.huawei.l00379880.mythread.Chapter05SecureObject.singleton;
+package com.huawei.l00379880.mythread.Chapter04SecureObject.singleton;
 
 import com.huawei.l00379880.mythread.annotations.ThreadRecommend;
 import com.huawei.l00379880.mythread.annotations.ThreadSafe;

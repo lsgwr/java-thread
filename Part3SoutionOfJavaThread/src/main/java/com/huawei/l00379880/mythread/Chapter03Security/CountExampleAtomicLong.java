@@ -1,10 +1,10 @@
 /***********************************************************
- * @Description : 原子性测试
+ * @Description : 原子性测试,Long类型
  * @author      : 梁山广(Laing Shan Guang)
  * @date        : 2018/7/15 21:22
  * @email       : liangshanguang2@gmail.com
  ***********************************************************/
-package com.huawei.l00379880.mythread.Chapter04Security;
+package com.huawei.l00379880.mythread.Chapter03Security;
 
 import com.huawei.l00379880.mythread.annotations.ThreadSafe;
 import lombok.extern.slf4j.Slf4j;
@@ -12,15 +12,15 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Semaphore;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 @Slf4j
 @ThreadSafe
-public class CountExampleAtomic {
+public class CountExampleAtomicLong {
     private static int threadTotal = 200;
     private static int clientTotal = 5000;
 
-    private static AtomicInteger count = new AtomicInteger(0);
+    private static AtomicLong count = new AtomicLong(0);
 
     public static void main(String[] args) {
         ExecutorService exec = Executors.newCachedThreadPool();

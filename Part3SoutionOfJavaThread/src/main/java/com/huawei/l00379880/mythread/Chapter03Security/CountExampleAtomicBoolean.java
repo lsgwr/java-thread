@@ -1,10 +1,10 @@
 /***********************************************************
- * @Description : 原子性测试,Long类型
+ * @Description : 原子性测试,Boolean类型实现代码只执行一次
  * @author      : 梁山广(Laing Shan Guang)
- * @date        : 2018/7/15 21:22
+ * @date        : 2018/7/15 22:18
  * @email       : liangshanguang2@gmail.com
  ***********************************************************/
-package com.huawei.l00379880.mythread.Chapter04Security;
+package com.huawei.l00379880.mythread.Chapter03Security;
 
 import com.huawei.l00379880.mythread.annotations.ThreadSafe;
 import lombok.extern.slf4j.Slf4j;
@@ -12,15 +12,15 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Semaphore;
-import java.util.concurrent.atomic.LongAdder;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @Slf4j
 @ThreadSafe
-public class CountExampleAtomicLongAdder {
+public class CountExampleAtomicBoolean {
     private static int threadTotal = 200;
     private static int clientTotal = 5000;
 
-    private static LongAdder count = new LongAdder();
+    private static AtomicBoolean isExcute = new AtomicBoolean(false);
 
     public static void main(String[] args) {
         ExecutorService exec = Executors.newCachedThreadPool();
@@ -29,7 +29,7 @@ public class CountExampleAtomicLongAdder {
             exec.execute(() -> {
                 try {
                     semaphore.acquire();
-                    add();
+                    test();
                     semaphore.release();
                 } catch (InterruptedException e) {
                     log.error("exception:{}", e);
@@ -37,10 +37,13 @@ public class CountExampleAtomicLongAdder {
             });
         }
         exec.shutdown();
-        log.info("count:{}", count);
+        log.info("isExcute:{}", isExcute);
     }
 
-    private static void add() {
-        count.increment();
+    private static void test() {
+        // 只会执行一次
+        if (isExcute.compareAndSet(false, true)) {
+            log.info("excuted!!");
+        }
     }
 }
