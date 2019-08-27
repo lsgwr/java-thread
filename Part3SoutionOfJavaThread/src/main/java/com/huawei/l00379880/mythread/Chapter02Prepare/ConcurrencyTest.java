@@ -20,11 +20,11 @@ public class ConcurrencyTest {
     /**
      * 请求总数
      */
-    public static int clientTotal = 1000;
+    public static int clientTotal = 50000;
     /**
      * 同时并发执行地线程数
      */
-    public static int threadTotal = 50;
+    public static int threadTotal = 200;
     /**
      * 计数
      */
@@ -35,20 +35,28 @@ public class ConcurrencyTest {
         ExecutorService executorService = Executors.newCachedThreadPool();
         // 控制并发数
         final Semaphore semaphore = new Semaphore(threadTotal);
+        // 请求计数
         final CountDownLatch countDownLatch = new CountDownLatch(clientTotal);
+        // 放入请求
         for (int i = 0; i < clientTotal; i++) {
-            executorService.execute(() -> {
-                try {
-                    semaphore.acquire();
-                    add();
-                    semaphore.release();
-                } catch (InterruptedException e) {
-                    log.error("exception", e);
+            executorService.execute(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        // 判断显示是否空闲，空闲就尝试获取锁
+                        semaphore.acquire();
+                        add();
+                        semaphore.release();
+                    } catch (InterruptedException e) {
+                        log.error("exception", e);
+                    }
+                    countDownLatch.countDown();
                 }
-                countDownLatch.countDown();
             });
         }
+        // 等待countDownLatch减为0
         countDownLatch.await();
+        // 关闭线程池
         executorService.shutdown();
         log.info("count:{}", count);
     }
@@ -57,3 +65,9 @@ public class ConcurrencyTest {
         count++;
     }
 }
+
+/**
+ * 执行可以看到并没输出预期的50000
+ * <p>
+ * 11:08:41.282 [main] INFO com.huawei.l00379880.mythread.Chapter02Prepare.ConcurrencyTest - count:49995
+ */
