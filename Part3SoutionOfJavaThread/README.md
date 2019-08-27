@@ -8,6 +8,7 @@
 
 ## 参考博客
 
++ [并发基础](https://blog.51cto.com/zero01/2094499)
 + [线程安全性详解](https://blog.51cto.com/zero01/2300671)
 + [如何安全发布对象](https://blog.51cto.com/zero01/2300908)
 + [线程安全策略](https://blog.51cto.com/zero01/2304422)
