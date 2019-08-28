@@ -4,7 +4,7 @@
  * @date        : 2018/7/17 00:13
  * @email       : liangshanguang2@gmail.com
  ***********************************************************/
-package com.huawei.l00379880.mythread.Chapter03Security;
+package com.huawei.l00379880.mythread.Chapter03Security.Section4Volatile;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -41,3 +41,7 @@ public class CountExampleVolatile {
         count++;
     }
 }
+
+/**
+ * 08:01:38.860 [main] INFO com.huawei.l00379880.mythread.Chapter03Security.Section4Volatile.CountExampleVolatile - count:4999
+ */

@@ -4,7 +4,7 @@
  * @date        : 2019/8/27 22:52
  * @email       : liangshanguang2@gmail.com
  ***********************************************************/
-package com.huawei.l00379880.mythread.Chapter03Security.Section1Atomic1;
+package com.huawei.l00379880.mythread.Chapter03Security.Section3Synchronized;
 
 import com.huawei.l00379880.mythread.annotations.ThreadSafe;
 import lombok.extern.slf4j.Slf4j;

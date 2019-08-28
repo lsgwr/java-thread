@@ -1,10 +1,10 @@
 /***********************************************************
  * @Description : 原子性测试,Boolean类型实现代码只执行一次
  * @author      : 梁山广(Laing Shan Guang)
- * @date        : 2018/7/15 22:18
+ * @date        : 2019/8/28 07:18
  * @email       : liangshanguang2@gmail.com
  ***********************************************************/
-package com.huawei.l00379880.mythread.Chapter03Security.Section1Atomic1;
+package com.huawei.l00379880.mythread.Chapter03Security.Section2Atomic2;
 
 import com.huawei.l00379880.mythread.annotations.ThreadSafe;
 import lombok.extern.slf4j.Slf4j;
