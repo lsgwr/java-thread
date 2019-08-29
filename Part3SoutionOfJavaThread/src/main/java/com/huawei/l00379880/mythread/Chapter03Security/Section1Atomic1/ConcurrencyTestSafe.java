@@ -17,7 +17,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 @Slf4j
 @ThreadSafe
-public class ConcurrencyTestSafe2 {
+public class ConcurrencyTestSafe {
     /**
      * 请求总数
      */
