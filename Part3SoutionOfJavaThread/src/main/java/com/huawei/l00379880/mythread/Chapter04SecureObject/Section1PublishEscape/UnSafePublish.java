@@ -8,7 +8,7 @@
  * @date        : 2018/7/17 08:12
  * @email       : liangshanguang2@gmail.com
  ***********************************************************/
-package com.huawei.l00379880.mythread.Chapter04SecureObject;
+package com.huawei.l00379880.mythread.Chapter04SecureObject.Section1PublishEscape;
 
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;

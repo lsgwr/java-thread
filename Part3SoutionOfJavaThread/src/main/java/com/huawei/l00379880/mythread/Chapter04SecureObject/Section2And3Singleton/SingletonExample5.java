@@ -5,35 +5,35 @@
  * @date        : 2018/7/18 00:39
  * @email       : liangshanguang2@gmail.com
  ***********************************************************/
-package com.huawei.l00379880.mythread.Chapter04SecureObject.singleton;
+package com.huawei.l00379880.mythread.Chapter04SecureObject.Section2And3Singleton;
 
 import com.huawei.l00379880.mythread.annotations.ThreadNotRecommend;
-import com.huawei.l00379880.mythread.annotations.ThreadNotSafe;
+import com.huawei.l00379880.mythread.annotations.ThreadSafe;
 
-@ThreadNotSafe
+@ThreadSafe
 @ThreadNotRecommend
-public class SingletonExample4 {
+public class SingletonExample5 {
     /**
      * 私有构造函数
      */
-    private SingletonExample4() {
+    private SingletonExample5() {
     }
 
     /**
-     * 单例对象
+     * 单例对象.Volatile可以限制指令重排+双重检测机制
      */
-    private static SingletonExample4 instance = null;
+    private volatile static SingletonExample5 instance = null;
 
     /**
      * 静态工厂方法,加上了代码块同步，可以保证安全,并且可以减少性能损耗(双重同步锁单例模式)
      * 但是仍然是线程不安全的，这个要从内存分配说起，new分好几步，可能导致线程不安全
      */
-    public static synchronized SingletonExample4 getInstance() {
+    public static synchronized SingletonExample5 getInstance() {
         // 双重检测机制
         if (instance == null) {
-            synchronized (SingletonExample4.class) {
+            synchronized (SingletonExample5.class) {
                 if (instance == null) {
-                    instance = new SingletonExample4();
+                    instance = new SingletonExample5();
                 }
             }
         }
