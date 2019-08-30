@@ -1,17 +1,22 @@
 /***********************************************************
- * @Description : StringBuilder与StringBuffer
+ * @Description : SimpleDateFormat线程安全写法(线程局部变量)
  * @author      : 梁山广(Liang Shan Guang)
  * @date        : 2019/8/30 08:15
  * @email       : liangshanguang2@gmail.com
  ***********************************************************/
 package com.huawei.l00379880.mythread.Chapter05Immutable.Section4And5UnsafeThreadExample;
 
+import com.huawei.l00379880.mythread.annotations.ThreadSafe;
+
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Semaphore;
 
-public class StringBufferBuilder {
+@ThreadSafe
+public class SimpleDateFormatSafe {
     /**
      * 请求总数
      */
@@ -20,8 +25,6 @@ public class StringBufferBuilder {
      * 同时并发执行地线程数
      */
     public static int threadTotal = 200;
-    public static StringBuilder sb = new StringBuilder();
-    public static StringBuffer sf = new StringBuffer();
 
     public static void main(String[] args) throws InterruptedException {
         ExecutorService executorService = Executors.newCachedThreadPool();
@@ -41,19 +44,15 @@ public class StringBufferBuilder {
         }
         countDownLatch.await();
         executorService.shutdown();
-        // 按理说长度该是5000，但是由于StringBuilder不是线程安全的，所以结果一般会小于5000,改成StringBuffer就好了，但是效率比StringBuilder低
-        System.out.println("StringBuilder:" + sb.length());
-        System.out.println("StringBuffer:" + sf.length());
     }
 
     private static void update() {
-        sb.append("1");
-        sf.append("1");
+        try {
+            // 利用线程封闭的思想把SimpleDateFormat对象转变为线程局部变量，这样就线程安全了
+            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyyMMdd");
+            simpleDateFormat.parse("20180208");
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
     }
 }
-/**
- * 输出结果(StringBuilder的结果小于5000，所以是线程不安全地):
- * <p>
- * StringBuilder:4998
- * StringBuffer:5000
- */
