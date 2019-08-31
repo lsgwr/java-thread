@@ -4,6 +4,10 @@
 
 包路径为：`java.util.concurrent.locks.AbstractQueuedSynchronizer`
 
+## 6.1 AQS原理和代码介绍
+
+### 总体介绍
+
 AbstractQueuedSynchronizer底层数据结构是一个双向链表，属于队列的一种实现,代码流程如下：
 
 ![AQS的代码实现](images/Chapter06AQS/AQS_code_structure.jpg)
@@ -15,6 +19,9 @@ AQS是JDK1.5开始提供的
 
 + 是使用基于Node实现的FIFO等待队列的阻塞锁和相关的同步器的一个同步框架，
 + 使用一个int类型的volatile变量(命名为state)来维护同步状态，通过内置的FIFO队列来完成资源获取线程的排队工作
++ 使用方法是继承
++ 子类通过继承并通过实现它的方法管理其状态{acquire和release}的方法操纵其状态
++ 可以同时实现排他锁和共享锁模式(独占exclusive、共享shared)
 
 AbstractQueuedSynchronizer中对state的操作是原子的，且不能被继承。所有的同步机制的实现均依赖于对改变量的原子操作。为了实现不同的同步机制，我们需要创建一个非共有的(non-public internal)扩展(extends)了AQS类的内部辅助类来实现相应的同步逻辑,以java.util.concurrent.locks.ReentrantReadWriteLoc为例，其252行开始如下代码：
 
@@ -34,4 +41,75 @@ AbstractQueuedSynchronizer并不实现任何同步接口，它提供了一些可
 
 当然，我们自己也能利用AQS非常轻松容易地构造出符合我们自己需求的同步器，由此可知`AQS是Java并发包中最为核心的一个基类`。
 
+
+### 关于AQS里的state状态：
+
+我们提到了AbstractQueuedSynchronizer维护了一个volatile int类型的变量，命名为state，用于表示当前同步状态。volatile虽然不能保证操作的原子性，但是保证了当前变量state的可见性。state的访问方式有三种:
+
+```java
+getState()
+setState()
+compareAndSetState()
+```
+
+这三种操作均是原子操作，其中compareAndSetState的实现依赖于Unsafe的compareAndSwapInt()方法。
+
+### 关于自定义资源共享方式：
+
+AQS支持两种资源共享方式：Exclusive(独占，只有一个线程能执行，如ReentrantLock)和Share(共享，多个线程可同时执行，如Semaphore/CountDownLatch)。这样方便使用者实现不同类型的同步组件，独占式如ReentrantLock，共享式如Semaphore，CountDownLatch，组合式的如ReentrantReadWriteLock。总之，AQS为使用提供了底层支撑，如何组装实现，使用者可以自由发挥。
+
+### 关于同步器设计：
+
+同步器的设计是基于模板方法模式的，一般的使用方式是这样：
+
++ 使用者继承AbstractQueuedSynchronizer并重写指定的方法。（这些重写方法很简单，无非是对于共享资源state的获取和释放）
++ 将AQS组合在自定义同步组件的实现中，并调用其模板方法，而这些模板方法会调用使用者重写的方法。这其实是模板方法模式的一个很经典的应用。
+
+不同的自定义同步器争用共享资源的方式也不同。自定义同步器在实现时只需要实现共享资源state的获取与释放方式即可，至于具体线程等待队列的维护（如获取资源失败入队/唤醒出队等），AQS已经在底层实现好了。自定义同步器实现时主要实现以下几种方法：
+
+```java
+protected boolean isHeldExclusively()    // 该线程是否正在独占资源。只有用到condition才需要去实现它。
+protected boolean tryAcquire(int)        // 独占方式。尝试获取资源，成功则返回true，失败则返回false。
+protected boolean tryRelease(int)        // 独占方式。尝试释放资源，成功则返回true，失败则返回false。
+protected int tryAcquireShared(int)  // 共享方式。尝试获取资源。负数表示失败；0表示成功，但没有剩余可用资源；正数表示成功，且有剩余资源。
+protected boolean tryReleaseShared(int)  // 共享方式。尝试释放资源，如果释放后允许唤醒后续等待结点返回true，否则返回false。
+```
+
+### 如何使用：
+
+首先，我们需要去继承`AbstractQueuedSynchronizer`这个类，然后我们根据我们的需求去重写相应的方法，比如
++ 要实现一个独占锁，那就去重写tryAcquire，tryRelease方法
++ 要实现共享锁，就去重写tryAcquireShared，tryReleaseShared
++ 最后，在我们的组件中调用AQS中的模板方法就可以了，而这些模板方法是会调用到我们之前重写的那些方法的。
+
+也就是说，我们只需要很小的工作量就可以实现自己的同步组件，重写的那些方法，仅仅是一些简单的对于共享资源state的获取和释放操作，至于像是获取资源失败，线程需要阻塞之类的操作，自然是AQS帮我们完成了。
+
+### 具体实现的思路：
+
++ 首先AQS内部维护了一个CLH队列，来管理锁
++ 线程尝试获取锁，如果获取失败，则将等待信息等包装成一个Node结点，加入到同步队列Sync queue里不断重新尝试获取锁（当前结点为head的直接后继才会尝试），如果获取失败，则会阻塞自己，直到被唤醒
++ 当持有锁的线程释放锁的时候，会唤醒队列中的后继线程
+
+### 设计思想：
+
+对于使用者来讲，我们无需关心获取资源失败，线程排队，线程阻塞/唤醒等一系列复杂的实现，这些都在AQS中为我们处理好了。我们只需要负责好自己的那个环节就好，也就是获取/释放共享资源state的姿势。很经典的模板方法设计模式的应用，AQS为我们定义好顶级逻辑的骨架，并提取出公用的线程入队列/出队列，阻塞/唤醒等一系列复杂逻辑的实现，将部分简单的可由使用者决定的操作逻辑延迟到子类中去实现即可。
+
+### 基于AQS的同步组件：
+
++ CountDownLatch
++ Semaphore
++ CyclicBarrier
++ ReentrantLock
++ Condition
++ FutureTask
+
+### AQS小结：
+
++ 使用Node实现FIFO队列，可以用于构建锁或者其他同步装置的基础框架
++ 利用了一个int类型表示状态，有一个state的成员变量，表示获取锁的线程数（0没有线程获取锁，1有线程获取锁，大于1表示重入锁的数量），和一个同步组件ReentrantLock。状态信息通过procted级别的getState，setState，compareAndSetState进行操作
++ 使用方法是继承，然后复写AQS中的方法，基于模板方法模式
++ 子类通过继承并通过实现它的方法管理其状态{acquire和release}的方法操作状态
++ 可以同时实现排它锁和共享锁的模式（独占、共享）
+
+## 5.2 CountDownLatch
 
