@@ -113,3 +113,8 @@ protected boolean tryReleaseShared(int)  // 共享方式。尝试释放资源，
 
 ## 5.2 CountDownLatch
 
+CountDownLatch是一个同步工具类，它允许`一个或多个线程一直等待`，直到其他线程执行完后再执行。例如，应用程序的主线程希望在负责启动框架服务的线程已经启动所有框架服务之后执行。
+
+CountDownLatch是通过一个计数器来实现的，计数器的初始化值为线程的数量。每当一个线程完成了自己的任务后，计数器的值就相应得减1。当计数器到达0时，表示所有的线程都已完成任务，然后在闭锁上等待的线程就可以恢复执行任务。
+
+![CountDownLatch示意图](images/Chapter02Prepare/CountDownLatch.jpg)
