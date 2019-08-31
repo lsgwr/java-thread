@@ -113,8 +113,92 @@ protected boolean tryReleaseShared(int)  // 共享方式。尝试释放资源，
 
 ## 5.2 CountDownLatch
 
+### 基本原理
+
 CountDownLatch是一个同步工具类，它允许`一个或多个线程一直等待`，直到其他线程执行完后再执行。例如，应用程序的主线程希望在负责启动框架服务的线程已经启动所有框架服务之后执行。
 
 CountDownLatch是通过一个计数器来实现的，计数器的初始化值为线程的数量。每当一个线程完成了自己的任务后，计数器的值就相应得减1。当计数器到达0时，表示所有的线程都已完成任务，然后在闭锁上等待的线程就可以恢复执行任务。
 
 ![CountDownLatch示意图](images/Chapter02Prepare/CountDownLatch.jpg)
+
+CountDownLatch的构造函数源码如下：
+
+```java
+/**
+ * Constructs a {@code CountDownLatch} initialized with the given count.
+ *
+ * @param count the number of times {@link #countDown} must be invoked
+ *        before threads can pass through {@link #await}
+ * @throws IllegalArgumentException if {@code count} is negative
+ */
+public CountDownLatch(int count) {
+    if (count < 0) throw new IllegalArgumentException("count < 0");
+    this.sync = new Sync(count);
+}
+```
+
+计数器count是闭锁需要等待的线程数量，只能被设置一次，且CountDownLatch没有提供任何机制去重新设置计数器count。
+
+与CountDownLatch的第一次交互是主线程等待其他线程。主线程必须在启动其他线程后立即调用CountDownLatch.await()方法。这样主线程的操作就会在这个方法上阻塞，直到其他线程完成各自的任务。
+
+其他N个线程必须引用CountDownLatch闭锁对象，因为它们需要通知CountDownLatch对象，它们各自完成了任务；这种通知机制是通过CountDownLatch.countDown()方法来完成的；每调用一次，count的值就减1，因此当N个线程都调用这个方法，count的值就等于0，然后主线程就可以通过await()方法，恢复执行自己的任务。
+
+注：该计数器的操作是原子性的
+
+### CountDownLatch使用场景：
+
++ 实现最大的并行性：有时我们想同时启动多个线程，实现最大程度的并行性。例如，我们想测试一个单例类。如果我们创建一个初始计数器为1的CountDownLatch，并让其他所有线程都在这个锁上等待，只需要调用一次countDown()方法就可以让其他所有等待的线程同时恢复执行。
++ 开始执行前等待N个线程完成各自任务：例如应用程序启动类要确保在处理用户请求前，所有N个外部系统都已经启动和运行了。
++ 死锁检测：一个非常方便的使用场景是你用N个线程去访问共享资源，在每个测试阶段线程数量不同，并尝试产生死锁。
+
+### 使用示例
+
+#### 1.基本用法：
+
+```java
+@Slf4j
+public class CountDownLatchExample1 {
+    private final static int THREAD_COUNT = 200;
+
+    public static void main(String[] args) throws InterruptedException {
+        ExecutorService exec = Executors.newCachedThreadPool();
+        final CountDownLatch countDownLatch = new CountDownLatch(THREAD_COUNT);
+
+        for (int i = 0; i < THREAD_COUNT; i++) {
+            final int threadNum = i;
+            exec.execute(() -> {
+                try {
+                    test(threadNum);
+                } catch (InterruptedException e) {
+                    log.error("", e);
+                } finally {
+                    // 为防止出现异常，放在finally更保险一些
+                    countDownLatch.countDown();
+                }
+            });
+        }
+        countDownLatch.await();
+        log.info("finish");
+        exec.shutdown();
+    }
+
+    private static void test(int threadNum) throws InterruptedException {
+        TimeUnit.MILLISECONDS.sleep(100);
+        log.info("{}", threadNum);
+        TimeUnit.MILLISECONDS.sleep(100);
+    }
+}
+```
+
+#### 2.超时结束
+
+比如有多个线程完成一个任务，但是这个任务只想给它一个指定的时间，超过这个任务就不继续等待了，完成多少算多少：
+
+```java
+// 等待指定的时间 参数1：等待时间，参数2：时间单位
+countDownLatch.await(10, TimeUnit.MILLISECONDS);
+```
+
+关于CountDownLatch的其他例子可以参考另一篇文章：
+
+[CountDownLatch类的使用](https://blog.51cto.com/zero01/2108173)
