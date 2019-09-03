@@ -374,3 +374,107 @@ boolean hasQueuedThreads()         // 是否有线程正在等待获取许可证
 void reducePermits(int reduction)  // 减少reduction个许可证。是个protected方法。
 Collection getQueuedThreads()      // 返回所有等待获取许可证的线程集合。是个protected方法。
 ```
+
+## 6.4 CyclicBarrier
+
+### 原理
+
+CyclicBarrier 的字面意思是可循环使用(Cyclic)的屏障(Barrier)。
+
+它要做的事情是，
++ 让一组线程到达一个屏障(也可以叫同步点)时被阻塞，直到最后一个线程到达屏障时，屏障才会开门，所有被屏障拦截的线程才会继续干活。
++ 当某个线程调用了await方法之后，就会进入等待状态，并将计数器-1，直到所有线程调用await方法使计数器为0，才可以继续执行.
+
+由于计数器可以重复使用，所以我们又叫他循环屏障。
+
+CyclicBarrier默认的构造方法是`CyclicBarrier(int parties)`，其参数表示屏障拦截的线程数量，每个线程调用await方法告诉CyclicBarrier我已经到达了屏障，然后当前线程被阻塞。
+
+![CyclicBarrier原理图](https://s1.51cto.com/images/blog/201810/19/e38711920c9f143c34d49891be7efc05.png)
+
+### 应用场景
+
+CyclicBarrier可以用于多线程计算数据，最后合并计算结果的应用场景。比如我们用一个Excel保存了用户所有银行流水，每个Sheet保存一个帐户近一年的每笔银行流水，现在需要统计用户的日均银行流水，先用多线程处理每个sheet里的银行流水，都执行完之后，得到每个sheet的日均银行流水，最后，再用barrierAction用这些线程的计算结果，计算出整个Excel的日均银行流水。
+
+### CyclicBarrier和CountDownLatch区别
+
++ 可重入性
+  + CountDownLatch的计数器只能使用一次。
+  + 而CyclicBarrier的计数器可以使用reset() 方法重置。所以CyclicBarrier能处理更为复杂的业务场景，比如如果计算发生错误，可以重置计数器，并让线程们重新执行一次。
++ 线程关系
+  + CountDownLatch主要用于实现一个或n个线程需要等待其他线程完成某项操作之后，才能继续往下执行，描述的是一个或n个线程等待其他线程的关系
+  + CyclicBarrier是多个线程相互等待，直到满足条件以后再一起往下执行。描述的是多个线程相互等待的场景
+
+### 方法列表
+
+CyclicBarrier还提供其他有用的方法，比如getNumberWaiting方法可以获得CyclicBarrier阻塞的线程数量。isBroken方法用来知道阻塞的线程是否被中断。
+
+![CyclicBarrier方法列表](https://s1.51cto.com/images/blog/201810/19/5e75cd1e874e74378caf838b341161ab.png)
+
+### 使用示例
+
+#### 1.基本使用
+
+```java
+@Slf4j
+public class CyclicBarrierExample1 {
+    // 给定一个值，说明有多少个线程同步等待
+    private static CyclicBarrier barrier = new CyclicBarrier(5);
+
+    public static void main(String[] args) throws InterruptedException {
+        ExecutorService exec = Executors.newCachedThreadPool();
+
+        for (int i = 0; i < 10; i++) {
+            final int num = i;
+            // 延迟1秒，方便观察
+            Thread.sleep(1000);
+            exec.execute(() -> {
+                try {
+                    CyclicBarrierExample1.race(num);
+                } catch (Exception e) {
+                    log.error("", e);
+                }
+            });
+        }
+        exec.shutdown();
+    }
+
+    private static void race(int num) throws Exception {
+        Thread.sleep(1000);
+        log.info("{} is ready", num);
+        // 阻塞线程
+        barrier.await();
+        log.info("{} continue", num);
+    }
+}
+```
+
+#### 2.以防await无限阻塞进程，我们可以设置await的超时时间
+
+> 修改race方法代码如下
+
+```java
+private static void race(int num) throws Exception {
+    Thread.sleep(1000);
+    log.info("{} is ready", num);
+    try {
+        // 由于设置了超时时间后阻塞的线程可能会被中断，抛出BarrierException异常，如果想继续往下执行，需要加上try-catch
+        barrier.await(2000, TimeUnit.MILLISECONDS);
+    } catch (InterruptedException | TimeoutException | BrokenBarrierException e) {
+        // isBroken方法用来知道阻塞的线程是否被中断
+        log.warn("exception occurred {} {}. isBroken : {}", e.getClass().getName(), e.getMessage(), barrier.isBroken());
+    }
+    log.info("{} continue", num);
+}
+```
+
+#### 3.希望当所有线程到达屏障后就执行一个runnable的话
+
+> 可以使用`CyclicBarrier(int parties, Runnable barrierAction)`构造函数传递一个runnable实例。如下示例：
+
+```java
+/**
+ * 当线程全部到达屏障时，优先执行这里传入的runnable
+ */
+private static CyclicBarrier barrier = new CyclicBarrier(5, () -> log.info("callback is running"));
+```
+
