@@ -202,3 +202,132 @@ countDownLatch.await(10, TimeUnit.MILLISECONDS);
 关于CountDownLatch的其他例子可以参考另一篇文章：
 
 [CountDownLatch类的使用](https://blog.51cto.com/zero01/2108173)
+
+## 5.3 Semaphore
+
+### 基本原理
+
+Semaphore（信号量）是用来控制同时访问特定资源的线程数量，它通过协调各个线程，以保证合理的使用公共资源。
+
+很多年以来，我都觉得从字面上很难理解Semaphore所表达的含义，只能把它比作是控制流量的红绿灯，比如XX马路要限制流量，只允许同时有一百辆车在这条路上行使，其他的都必须在路口等待，所以前一百辆车会看到绿灯，可以开进这条马路，后面的车会看到红灯，不能驶入XX马路，但是如果前一百辆中有五辆车已经离开了XX马路，那么后面就允许有5辆车驶入马路，这个例子里说的车就是线程，驶入马路就表示线程在执行，离开马路就表示线程执行完成，看见红灯就表示线程被阻塞，不能执行。
+
+![Semaphore与红绿灯](images/Chapter06AQS/Semaphore与红绿灯.png)
+
+所以简单来说，**Semaphore主要作用就是可以控制同一时间并发执行的线程数。**
+
+Semaphore有两个构造函数，参数permits表示许可数，它最后传递给了AQS的state值。线程在运行时首先获取许可，如果成功，许可数就减1，线程运行，当线程运行结束就释放许可，许可数就加1。如果许可数为0，则获取失败，线程位于AQS的等待队列中，它会被其它释放许可的线程唤醒。在创建Semaphore对象的时候还可以指定它的公平性。一般常用非公平的信号量，非公平信号量是指在获取许可时先尝试获取许可，而不必关心是否已有需要获取许可的线程位于等待队列中，如果获取失败，才会入列。而公平的信号量在获取许可时首先要查看等待队列中是否已有线程，如果有则入列。
+
+```java
+/**
+ * Creates a {@code Semaphore} with the given number of
+ * permits and nonfair fairness setting.
+ *
+ * @param permits the initial number of permits available.
+ *        This value may be negative, in which case releases
+ *        must occur before any acquires will be granted.
+ */
+public Semaphore(int permits);
+
+ /**
+ * Creates a {@code Semaphore} with the given number of
+ * permits and the given fairness setting.
+ *
+ * @param permits the initial number of permits available.
+ *        This value may be negative, in which case releases
+ *        must occur before any acquires will be granted.
+ * @param fair {@code true} if this semaphore will guarantee
+ *        first-in first-out granting of permits under contention,
+ *        else {@code false}
+ */
+public Semaphore(int permits, boolean fair);
+```
+
+![Semaphore构造函数](images/Chapter06AQS/Semaphore构造函数.png)
+
+### 使用场景
+
+Semaphore可以用于做流量控制，特别公用资源有限的应用场景，比如数据库连接。假如有一个需求，要读取几万个文件的数据，因为都是IO密集型任务，我们可以启动几十个线程并发的读取，但是如果读到内存后，还需要存储到数据库中，而数据库的连接数只有10个，这时我们必须控制只有十个线程同时获取数据库连接保存数据，否则会报错无法获取数据库连接。这个时候，我们就可以使用Semaphore来做流控。
+
+### 使用示例
+
+#### 1.每次获取一个许可
+
+```java
+public class SemaphoreExample1 {
+    private final static int THREAD_COUNT = 200;
+
+    public static void main(String[] args) {
+        ExecutorService exec = Executors.newCachedThreadPool();
+        final Semaphore semaphore = new Semaphore(10);
+
+        for (int i = 0; i < THREAD_COUNT; i++) {
+            final int threadNum = i;
+            exec.execute(() -> {
+                try {
+                    // 获取一个许可
+                    semaphore.acquire();
+                    System.out.println(threadNum);
+                    // 释放一个许可
+                    semaphore.release();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            });
+        }
+
+        exec.shutdown();
+    }
+}
+```
+
+在代码中，虽然有200个线程在执行，但是只允许10个并发的执行。Semaphore的构造方法Semaphore(int permits) 接收一个整型的数字，表示可用的许可证数量。所以Semaphore(10)表示允许10个线程获取许可证，也就是最大并发数是10。Semaphore的用法也很简单，首先线程使用Semaphore的acquire()获取一个许可证，使用完之后调用release()归还许可证。还可以用tryAcquire()方法尝试获取许可证。
+
+#### 2.获取多个许可
+
+> 如果希望每次获取多个许可的话只需要在acquire()方法的参数中进行指定即可，如下示例：
+
+```java
+// 获取多个许可
+semaphore.acquire(3);
+System.out.println(threadNum);
+// 释放多个许可
+semaphore.release(3);
+```
+
+#### 3.当并发很高，想要超过允许的并发数之后，就丢弃不处理的话
+
+> 可以使用Semaphore里的tryAcquire()方法尝试获取许可，该方法返回boolean类型的值，我们可以通过判断这个值来抛弃超过并发数的请求。如下示例：
+
+```java
+public class SemaphoreExample3 {
+    private final static int THREAD_COUNT = 200;
+
+    public static void main(String[] args) {
+        ExecutorService exec = Executors.newCachedThreadPool();
+        final Semaphore semaphore = new Semaphore(10);
+
+        for (int i = 0; i < THREAD_COUNT; i++) {
+            final int threadNum = i;
+            exec.execute(() -> {
+                try {
+                    // 尝试获取一个许可，若没有获取到许可的线程就会被抛弃，而不是阻塞
+                    if (semaphore.tryAcquire()) {
+                        System.out.println(threadNum);
+                        // 释放一个许可
+                        semaphore.release();
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            });
+        }
+
+        exec.shutdown();
+    }
+}
+```
+
+Semaphore中尝试获取许可的相关方法：
+
+![tryAcquire](images/Chapter06AQS/tryAcquire.png)
+
