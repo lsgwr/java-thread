@@ -282,6 +282,8 @@ public class SemaphoreExample1 {
 }
 ```
 
+示例代码见[Example1](src/main/java/com/huawei/l00379880/mythread/Chapter06AQS/Section3Semaphore/Example1.java)
+
 在代码中，虽然有200个线程在执行，但是只允许10个并发的执行。Semaphore的构造方法Semaphore(int permits) 接收一个整型的数字，表示可用的许可证数量。所以Semaphore(10)表示允许10个线程获取许可证，也就是最大并发数是10。Semaphore的用法也很简单，首先线程使用Semaphore的acquire()获取一个许可证，使用完之后调用release()归还许可证。还可以用tryAcquire()方法尝试获取许可证。
 
 #### 2.获取多个许可
@@ -295,6 +297,8 @@ System.out.println(threadNum);
 // 释放多个许可
 semaphore.release(3);
 ```
+
+示例代码见[Example2](src/main/java/com/huawei/l00379880/mythread/Chapter06AQS/Section3Semaphore/Example2.java)
 
 #### 3.当并发很高，想要超过允许的并发数之后，就丢弃不处理的话
 
@@ -333,6 +337,8 @@ Semaphore中尝试获取许可的相关方法：
 
 ![tryAcquire](images/Chapter06AQS/tryAcquire.png)
 
+示例代码见[Example3](src/main/java/com/huawei/l00379880/mythread/Chapter06AQS/Section3Semaphore/Example3.java)
+
 我们可以指定尝试获取许可的超时时间，例如我设置超时时间为1秒：
 
 ```java
@@ -344,6 +350,8 @@ if (semaphore.tryAcquire(1, TimeUnit.SECONDS)) {
 }
 ```
 
+示例代码见[Example4](src/main/java/com/huawei/l00379880/mythread/Chapter06AQS/Section3Semaphore/Example4.java)
+
 除此之外，还可以尝试获取多个许可，并且指定超时时间：
 
 ```java
@@ -354,6 +362,8 @@ if (semaphore.tryAcquire(3, 1, TimeUnit.SECONDS)) {
     semaphore.release(3);
 }
 ```
+
+示例代码见[Example5](src/main/java/com/huawei/l00379880/mythread/Chapter06AQS/Section3Semaphore/Example5.java)
 
 Semaphore中其他一些常用的方法：
 
