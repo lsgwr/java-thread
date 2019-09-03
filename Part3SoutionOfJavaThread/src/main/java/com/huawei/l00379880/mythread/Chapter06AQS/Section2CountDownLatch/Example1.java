@@ -41,3 +41,17 @@ public class Example1 {
         TimeUnit.MILLISECONDS.sleep(100);
     }
 }
+/**
+ * 输出结果(等所有子线程跑完主线程才会结束)
+ * 1
+ * 0
+ * 3
+ * 4
+ * 6
+ * 5
+ * 2
+ * 9
+ * 7
+ * 8
+ * 程序运行完毕！
+ */
