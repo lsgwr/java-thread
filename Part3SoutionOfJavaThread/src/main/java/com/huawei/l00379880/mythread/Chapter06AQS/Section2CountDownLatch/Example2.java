@@ -43,3 +43,18 @@ public class Example2 {
         TimeUnit.MILLISECONDS.sleep(random.nextInt(100));
     }
 }
+/**
+ * 输出结果(因为是随机数，每次结果可能都不同)：
+ * <p>
+ * 4
+ * 6
+ * 1
+ * 程序运行完毕！
+ * 0
+ * 3
+ * 7
+ * 9
+ * 2
+ * 5
+ * 8
+ */
