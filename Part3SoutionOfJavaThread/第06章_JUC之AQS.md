@@ -157,7 +157,7 @@ public CountDownLatch(int count) {
 
 ```java
 @Slf4j
-public class CountDownLatchExample1 {
+public class Example1 {
     private final static int THREAD_COUNT = 200;
 
     public static void main(String[] args) throws InterruptedException {
@@ -198,6 +198,8 @@ public class CountDownLatchExample1 {
 // 等待指定的时间 参数1：等待时间，参数2：时间单位
 countDownLatch.await(10, TimeUnit.MILLISECONDS);
 ```
+
+代买见[Example2](src/main/java/com/huawei/l00379880/mythread/Chapter06AQS/Section2CountDownLatch/Example2.java)
 
 关于CountDownLatch的其他例子可以参考另一篇文章：
 
@@ -331,3 +333,34 @@ Semaphore中尝试获取许可的相关方法：
 
 ![tryAcquire](images/Chapter06AQS/tryAcquire.png)
 
+我们可以指定尝试获取许可的超时时间，例如我设置超时时间为1秒：
+
+```java
+// 尝试获取一个许可，直到超过一秒
+if (semaphore.tryAcquire(1, TimeUnit.SECONDS)) {
+    System.out.println(threadNum);
+    // 释放一个许可
+    semaphore.release();
+}
+```
+
+除此之外，还可以尝试获取多个许可，并且指定超时时间：
+
+```java
+// 尝试获取多个许可，直到超过一秒
+if (semaphore.tryAcquire(3, 1, TimeUnit.SECONDS)) {
+    System.out.println(threadNum);
+    // 释放多个许可
+    semaphore.release(3);
+}
+```
+
+Semaphore中其他一些常用的方法：
+
+```java
+int availablePermits()             // 返回此信号量中当前可用的许可证数。
+int getQueueLength()               // 返回正在等待获取许可证的线程数。
+boolean hasQueuedThreads()         // 是否有线程正在等待获取许可证。
+void reducePermits(int reduction)  // 减少reduction个许可证。是个protected方法。
+Collection getQueuedThreads()      // 返回所有等待获取许可证的线程集合。是个protected方法。
+```
