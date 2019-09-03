@@ -389,7 +389,7 @@ CyclicBarrier 的字面意思是可循环使用(Cyclic)的屏障(Barrier)。
 
 CyclicBarrier默认的构造方法是`CyclicBarrier(int parties)`，其参数表示屏障拦截的线程数量，每个线程调用await方法告诉CyclicBarrier我已经到达了屏障，然后当前线程被阻塞。
 
-![CyclicBarrier原理图](https://s1.51cto.com/images/blog/201810/19/e38711920c9f143c34d49891be7efc05.png)
+![CyclicBarrier原理图](images/Chapter06AQS/CyclicBarrier原理图.png)
 
 ### 应用场景
 
@@ -408,7 +408,7 @@ CyclicBarrier可以用于多线程计算数据，最后合并计算结果的应�
 
 CyclicBarrier还提供其他有用的方法，比如getNumberWaiting方法可以获得CyclicBarrier阻塞的线程数量。isBroken方法用来知道阻塞的线程是否被中断。
 
-![CyclicBarrier方法列表](https://s1.51cto.com/images/blog/201810/19/5e75cd1e874e74378caf838b341161ab.png)
+![CyclicBarrier方法列表](images/Chapter06AQS/CyclicBarrier方法列表.png)
 
 ### 使用示例
 
@@ -478,3 +478,18 @@ private static void race(int num) throws Exception {
 private static CyclicBarrier barrier = new CyclicBarrier(5, () -> log.info("callback is running"));
 ```
 
+## 6.5~6.6 ReentrantLock与锁
+
+在Java里一共有两类锁，一类是synchornized同步锁，还有一种是JUC里提供的锁Lock，Lock是个接口，其核心实现类就是ReentrantLock。
+
+synchornized与ReentrantLock的区别对比如下表：
+
+| 对比维度                                                     | synchornized                                                 | ReentrantLock                  |
+| :----------------------------------------------------------- | :----------------------------------------------------------- | :----------------------------- |
+| 可重入性（线程进入锁的时候计数器就自增1，计数器下降为0则会释放锁） | 可重入                                                       | 可重入                         |
+| 锁的实现                                                     | JVM实现，很难操作源码                                        | JDK实现，可以观察其源码        |
+| 性能                                                         | 在引入偏向锁、轻量级锁/自旋锁后性能大大提升，官方建议无特殊要求时尽量使用synchornized，并且新版本的一些jdk源码都由之前的ReentrantLock改成了synchornized | 与优化后的synchornized相差不大 |
+| 功能区别                                                     | 方便简洁，由编译器负责加锁和释放锁                           | 需手工操作锁的加锁和释放       |
+| 锁粒度                                                       | 粗粒度，不灵活                                               | 细粒度，可灵活控制             |
+| 可否指定公平锁                                               | 不可以                                                       | 可以                           |
+| 可否放弃锁                                                   | 不可以                                                       | 可以                           |
