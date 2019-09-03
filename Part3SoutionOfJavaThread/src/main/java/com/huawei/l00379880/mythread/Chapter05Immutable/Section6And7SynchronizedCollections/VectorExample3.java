@@ -1,5 +1,6 @@
 package com.huawei.l00379880.mythread.Chapter05Immutable.Section6And7SynchronizedCollections;
 
+import java.util.Iterator;
 import java.util.Vector;
 
 public class VectorExample3 {

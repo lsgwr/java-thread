@@ -478,7 +478,9 @@ private static void race(int num) throws Exception {
 private static CyclicBarrier barrier = new CyclicBarrier(5, () -> log.info("callback is running"));
 ```
 
-## 6.5~6.6 ReentrantLock与锁
+## 6.5 ReentrantLock与锁
+
+### 和synchronized的区别
 
 在Java里一共有两类锁，一类是synchornized同步锁，还有一种是JUC里提供的锁Lock，Lock是个接口，其核心实现类就是ReentrantLock。
 
@@ -493,3 +495,124 @@ synchornized与ReentrantLock的区别对比如下表：
 | 锁粒度                                                       | 粗粒度，不灵活                                               | 细粒度，可灵活控制             |
 | 可否指定公平锁                                               | 不可以                                                       | 可以                           |
 | 可否放弃锁                                                   | 不可以                                                       | 可以                           |
+
+### ReentrantLock实现
+
+采用自旋锁，循环调用CAS操作来实现加锁，避免了使线程进入内核态的阻塞状态。想尽办法避免线程进入内核态的阻塞状态，是我们分析和理解锁设计的关键钥匙。
+
+### ReentrantLock独有的功能：
+
++ 可指定是公平锁还是非公平锁，所谓公平锁就是先等待的线程先获得锁
++ 提供了一个Condition类，可以分组唤醒需要唤醒的线程
++ 提供能够中断等待锁的线程的机制，`lock.lockInterruptibly()`
+
+在ReentrantLock中，对于公平和非公平的定义是通过对同步器AQS的扩展加以实现的，也就是在tryAcquire的实现上做了语义的控制。
+
+这里提到一个锁获取的公平性问题，如果在绝对时间上，先对锁进行获取的请求一定被先满足，那么这个锁是公平的，反之，是不公平的，也就是说等待时间最长的线程最有机会获取锁，也可以说锁的获取是有序的。ReentrantLock这个锁提供了一个构造函数，能够控制这个锁是否是公平的。
+
+而锁的名字也是说明了这个锁具备了重复进入的可能，也就是说能够让当前线程多次的进行对锁的获取操作，这样的最大次数限制是Integer.MAX_VALUE，约21亿次左右。
+
+事实上公平的锁机制往往没有非公平的效率高，因为公平的获取锁没有考虑到操作系统对线程的调度因素，这样造成JVM对于等待中的线程调度次序和操作系统对线程的调度之间的不匹配。对于锁的快速且重复的获取过程中，连续获取的概率是非常高的，而公平锁会压制这种情况，虽然公平性得以保障，但是响应比却下降了，但是并不是任何场景都是以TPS作为唯一指标的，因为公平锁能够减少“饥饿”发生的概率，等待越久的请求越是能够得到优先满足。
+
+### 要放弃synchronized？
+
+从上边的介绍，看上去ReentrantLock不仅拥有synchronized的所有功能，而且有一些功能synchronized无法实现的特性。性能方面，ReentrantLock也不比synchronized差，那么到底我们要不要放弃使用synchronized呢？答案是不要这样做。
+
+J.U.C包中的锁定类是用于高级情况和高级用户的工具，除非说你对Lock的高级特性有特别清楚的了解以及有明确的需要，或这有明确的证据表明同步已经成为可伸缩性的瓶颈的时候，否则我们还是继续使用synchronized。相比较这些高级的锁定类，synchronized还是有一些优势的，比如synchronized不可能忘记释放锁。还有当JVM使用synchronized管理锁定请求和释放时，JVM在生成线程转储时能够包括锁定信息，这些信息对调试非常有价值，它们可以标识死锁以及其他异常行为的来源。
+
+### 如何选择锁：
+
++ 若业务逻辑需使用到锁的高级功能去实现，那么就可以选择ReentrantLock
++ 需要细粒度操作锁时，选择ReentrantLock
++ 对ReentrantLock的机制很了解，有足够经验能够避免死锁的出现的开发者，可以选择ReentrantLock，不建议对锁机制不是很熟悉的开发者使用ReentrantLock
++ 对锁的需求较简单，使用synchornized
++ 初级开发者建议使用synchornized
+
+### 使用示例
+
+```java
+/***********************************************************
+ * @Description : ReentrantLock的基本使用
+ * @author      : 梁山广(Liang Shan Guang)
+ * @date        : 2019/9/3 23:25
+ * @email       : liangshanguang2@gmail.com
+ ***********************************************************/
+package com.huawei.l00379880.mythread.Chapter06AQS.Section5ReentrantLock;
+
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+
+public class Example1 {
+    /**
+     * 请求总数
+     */
+    public static int clientTotal = 5000;
+
+    /**
+     * 同时并发的线程数
+     */
+    public static int threadTotal = 200;
+
+    /**
+     * 计数
+     */
+    private static int count;
+
+    /**
+     * 锁对象，默认是使用非公平锁，可以传入true和false来决定使用公平所还是非公平锁
+     */
+    private final static Lock LOCK = new ReentrantLock();
+
+    public static void main(String[] args) throws InterruptedException {
+        ExecutorService exec = Executors.newCachedThreadPool();
+        Semaphore semaphore = new Semaphore(threadTotal);
+        CountDownLatch countDownLatch = new CountDownLatch(clientTotal);
+        for (int i = 0; i < clientTotal; i++) {
+            exec.execute(() -> {
+                try {
+                    semaphore.acquire();
+                    Example1.add();
+                    semaphore.release();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                countDownLatch.countDown();
+            });
+        }
+        countDownLatch.await();
+        exec.shutdown();
+        System.out.println("count=" + count);
+    }
+
+    private static void add() {
+        LOCK.lock();
+        try {
+            count++;
+        } finally {
+            LOCK.unlock();
+        }
+    }
+}
+```
+
+在ReentrantLock 中，lock()方法是一个无条件的锁，与synchronize意思差不多，但是另一个方法 tryLock()方法只有在成功获取了锁的情况下才会返回true，如果别的线程当前正持有锁，则会立即返回false。如果为这个方法加上timeout参数，则会在等待timeout的时间才会返回false或者在获取到锁的时候返回true。
+
+其他常用方法：
+
+```java
+boolean isHeldByCurrentThread();   // 当前线程是否保持锁定
+boolean isLocked()  // 是否存在任意线程持有锁资源
+void lockInterruptbly()  // 如果当前线程未被中断，则获取锁定；如果已中断，则抛出异常(InterruptedException)
+int getHoldCount()   // 查询当前线程保持此锁定的个数，即调用lock()方法的次数
+int getQueueLength()   // 返回正等待获取此锁定的预估线程数
+int getWaitQueueLength(Condition condition)  // 返回与此锁定相关的约定condition的线程预估数
+boolean hasQueuedThread(Thread thread)  // 当前线程是否在等待获取锁资源
+boolean hasQueuedThreads()  // 是否有线程在等待获取锁资源
+boolean hasWaiters(Condition condition)  // 是否存在指定Condition的线程正在等待锁资源
+boolean isFair()   // 是否使用的是公平锁
+```
+
