@@ -114,24 +114,32 @@ public FutureTask(Runnable runnable, V result) {
 #### 1.Future基本使用示例
 
 ```java
+import lombok.extern.slf4j.Slf4j;
+
+import java.util.concurrent.*;
+
+/***********************************************************
+ * @note      : Future基本使用案例，Callable返回多线程执行结果
+ * @author    : l00379880 梁山广
+ * @version   : V1.0 at 2019/9/4 10:26
+ ***********************************************************/
 @Slf4j
 public class FutureExample {
-
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) throws ExecutionException, InterruptedException {
         ExecutorService executorService = Executors.newCachedThreadPool();
-        // 使用lambda创建callable任务，使用Future接收任务执行的结果
-        Future<String> future = executorService.submit(() -> {
-            log.info("do something in callable");
-            Thread.sleep(5000);
-
-            return "Done";
+        // 创建callable任务，使用Future接收任务执行的结果、
+        Future<String> future = executorService.submit(new Callable<String>() {
+            @Override
+            public String call() throws Exception {
+                System.out.println("do something in callable");
+                Thread.sleep(5000);
+                return "Done";
+            }
         });
-
-        log.info("do something in main");
+        System.out.println("Do something in main");
         Thread.sleep(1000);
-        // 获取执行结果
-        String result = future.get();
-        log.info("result: {}", result);
+        // 获取执行结果,get()方法是阻塞的，阻塞等待获取任务执行结果
+        System.out.println("Future执行结果：" + future.get());
         executorService.shutdown();
     }
 }
@@ -140,26 +148,34 @@ public class FutureExample {
 #### 2.FutureTask基本使用示例：
 
 ```java
+import lombok.extern.slf4j.Slf4j;
+
+import java.util.concurrent.*;
+
+/***********************************************************
+ * @note      : FutureTask基本使用案例，Callable返回多线程执行结果
+ * @author    : l00379880 梁山广
+ * @version   : V1.0 at 2019/9/4 10:26
+ ***********************************************************/
 @Slf4j
 public class FutureTaskExample {
-
-    public static void main(String[] args) throws Exception {
-        // 构建FutureTask实例，使用lambda创建callable任务
-        FutureTask<String> futureTask = new FutureTask<>(() -> {
-            log.info("do something in callable");
-            Thread.sleep(5000);
-
-            return "Done";
-        });
-
+    public static void main(String[] args) throws ExecutionException, InterruptedException {
         ExecutorService executorService = Executors.newCachedThreadPool();
-        executorService.execute(futureTask);
-
-        log.info("do something in main");
+        // 创建callable任务，使用Future接收任务执行的结果、
+        FutureTask<String> future = new FutureTask<>(new Callable<String>() {
+            @Override
+            public String call() throws Exception {
+                System.out.println("do something in callable");
+                Thread.sleep(5000);
+                return "Done";
+            }
+        });
+        // 线程池可以直接传入FutureTask任务
+        executorService.execute(future);
+        System.out.println("Do something in main");
         Thread.sleep(1000);
-        // 获取执行结果
-        String result = futureTask.get();
-        log.info("result: {}", result);
+        // 获取执行结果,get()方法是阻塞的，阻塞等待获取任务执行结果
+        System.out.println("Future执行结果：" + future.get());
         executorService.shutdown();
     }
 }
