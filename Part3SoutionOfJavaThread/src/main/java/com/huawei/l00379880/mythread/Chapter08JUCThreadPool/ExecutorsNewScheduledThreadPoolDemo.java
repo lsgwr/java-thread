@@ -8,7 +8,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 /***********************************************************
- * @note      : 创建一个单线程化的线程池，它只会用唯一的工作线程来执行任务，保证所有任务按照指定顺序(FIFO, LIFO, 优先级)执行
+ * @note      : 创建一个定长线程池，支持定时及周期性任务执行
  * @author    : l00379880 梁山广
  * @version   : V1.0 at 2019/9/4 16:31
  ***********************************************************/
