@@ -275,13 +275,17 @@ public class ForkJoinTaskExample extends RecursiveTask<Integer> {
 }
 ```
 
-## 7.5 BlockingQueue
+## 7.4 BlockingQueue
+
+### 原理
 
 在新增的Concurrent包中，BlockingQueue很好的解决了多线程中，如何高效安全“传输”数据的问题，从名字也可以知道它是线程安全的。通过这些高效并且线程安全的队列类，为我们快速搭建高质量的多线程程序带来极大的便利。
 
 首先，最基本的来说， BlockingQueue 是一个先进先出的队列（Queue），为什么说是阻塞（Blocking）的呢？是因为 BlockingQueue 支持当获取队列元素但是队列为空时，会阻塞等待队列中有元素再返回；也支持添加元素时，如果队列已满，那么等到队列可以放入新元素时再放入。所以 BlockingQueue 主要应用于生产者消费者场景。
 
 ![BlockingQueue原理图](images/Chapter07JUCMore/BlockingQueue原理图.png)
+
+### 方法
 
 BlockingQueue 是一个接口，继承自 Queue，所以其实现类也可以作为 Queue 的实现来使用，而 Queue 又继承自 Collection 接口。
 BlockingQueue 对插入操作、移除操作、获取元素操作提供了四种不同的方法用于不同的场景中使用，总结如下表：
@@ -291,3 +295,86 @@ BlockingQueue 对插入操作、移除操作、获取元素操作提供了四种
 | Insert  | add(e)           | offer(e)      | put(e)         | offer(e, time, unit) |
 | Insert  | remove()         | poll()        | take()         | poll(time, unit)     |
 | Examine | element()        | peek()        | not applicable | not applicable       |
+
+
+说明：
+
++ 1、Throws Exceptions ：如果不能立即执行就抛出异常
++ 2、Special Value：如果不能立即执行就返回一个特殊的值（null 或 true/false，取决于具体的操作）
++ 3、Blocks：如果不能立即执行就阻塞等待此操作，直到这个操作成功
++ 4、Times Out：如果不能立即执行就阻塞一段时间，直到成功或者超时指定时间
+
+### BlockingQueue 的实现类：
+
++ ArrayBlockingQueue：它是一个有界的阻塞队列，内部实现是数组，需在初始化时指定容量大小，一旦指定大小就不能再变。采用FIFO方式存储元素：
+  ```java
+  public class ArrayBlockingQueue<E> extends AbstractQueue<E> implements BlockingQueue<E>, java.io.Serializable {
+      /** The queued items */
+      final Object[] items;
+      ...
+  }   
+  ```
++ DelayQueue：阻塞内部元素，DelayQueue内部元素必须实现Delayed接口，Delayed接口又继承了Comparable接口，原因在于DelayQueue内部元素需要排序，一般情况下按元素过期时间优先级排序：
+  ```java
+  public interface Delayed extends Comparable<Delayed> {
+      long getDelay(TimeUnit unit);
+  }
+  ```
+  DalayQueue内部采用PriorityQueue与ReentrantLock实现：
+  ```java
+  public class DelayQueue<E extends Delayed> extends AbstractQueue<E> implements BlockingQueue<E> {
+
+      private final transient ReentrantLock lock = new ReentrantLock();
+      private final PriorityQueue<E> q = new PriorityQueue<E>();
+      ...
+  }
+  ```
++ LinkedBlockingQueue：使用独占锁实现的阻塞队列，大小配置可选，如果初始化时指定了大小，那么它就是有边界的。不指定就无边界（最大整型值）。内部实现是链表，采用FIFO形式保存数据。
+  ```java
+  public LinkedBlockingQueue() {
+      // 不指定大小，无边界采用默认值，最大整型值
+      this(Integer.MAX_VALUE);
+  }
+  ```
++ PriorityBlockingQueue：带优先级的×××阻塞队列，无边界队列，允许插入null。插入的对象必须实现Comparator接口，队列优先级的排序规则就是按照我们对Comparable接口的实现来指定的。我们可以从PriorityBlockingQueue中获取一个迭代器，但这个迭代器并不保证能按照优先级的顺序进行迭代：
+  ```java
+  public class PriorityBlockingQueue<E> extends AbstractQueue<E> implements BlockingQueue<E>, java.io.Serializable {
+    ...
+
+      public boolean add(E e) {
+          return offer(e);
+      }
+
+      public boolean offer(E e) {
+          if (e == null)
+              throw new NullPointerException();
+          final ReentrantLock lock = this.lock;
+          lock.lock();
+          int n, cap;
+          Object[] es;
+          while ((n = size) >= (cap = (es = queue).length))
+              tryGrow(es, cap);
+          try {
+              //必须实现Comparator接口
+              final Comparator<? super E> cmp;
+              if ((cmp = comparator) == null)
+                  siftUpComparable(n, e, es);
+              else
+                  siftUpUsingComparator(n, e, es, cmp);
+              size = n + 1;
+              notEmpty.signal();
+          } finally {
+              lock.unlock();
+          }
+          return true;
+      }
+      ...
+  }        
+  ```
++ SynchronousQueue：同步阻塞队列，只能插入一个元素，×××非缓存队列，不存储元素。其内部并没有数据缓存空间，你不能调用peek()方法来看队列中是否有数据元素，当然遍历这个队列的操作也是不允许的：
+  ```java
+  public class SynchronousQueue<E> extends AbstractQueue<E>
+      implements BlockingQueue<E>, java.io.Serializable {
+      ...
+  }  
+  ```
