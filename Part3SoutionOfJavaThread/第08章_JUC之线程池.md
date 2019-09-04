@@ -345,3 +345,8 @@ public class ThreadPoolExample6 {
 + IO密集型任务，参考值可以设置为`2*N CPU`，即CPU核心数量的2倍
 
 最后需要说一句，线程池虽好但并非放之四海皆准，我们应当结合实际业务场景去考虑是否使用线程池。例如当线程池内需要执行的任务很小，小到执行任务的时间和任务调度的时间很接近，这时若使用线程池反而会更慢，因为任务调度和任务管理是需要耗时的。
+
+## 第六七八章基本讲完了JUC的总结，下面是JUC(java.util.concurrent)的总结
+
+![JUC的体系结构](images/Chapter05Immutable/JUC的体系结构.jpg)
+
