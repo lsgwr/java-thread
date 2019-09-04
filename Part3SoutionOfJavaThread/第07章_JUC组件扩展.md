@@ -194,79 +194,6 @@ Fork/Join框架主要采用的是工作窃取（work-stealing）算法，该算�
 + **优点**是`充分利用线程进行并行计算，并减少了线程间的竞争`
 + **缺点**是在`某些情况下还是存在竞争`，比如双端队列里只有一个任务时。并且消耗了更多的系统资源，比如创建多个线程和多个双端队列
 
-#### 代码示例
-
-```java
-import java.util.concurrent.ForkJoinPool;
-import java.util.concurrent.Future;
-import java.util.concurrent.RecursiveTask;
-
-/**
- * @program: concurrency-demo
- * @description: ForkJoin 使用示例
- * @author: 01
- * @create: 2019-9-4 20:12
- **/
-@Slf4j
-public class ForkJoinTaskExample extends RecursiveTask<Integer> {
-    private static final int THRESHOLD = 2;
-    private int start;
-    private int end;
-
-    private ForkJoinTaskExample(int start, int end) {
-        this.start = start;
-        this.end = end;
-    }
-
-    @Override
-    protected Integer compute() {
-        int sum = 0;
-
-        //如果任务足够小就直接计算任务
-        boolean canCompute = (end - start) <= THRESHOLD;
-        if (canCompute) {
-            for (int i = start; i <= end; i++) {
-                sum += i;
-            }
-        } else {
-            // 如果任务大于阈值，就分裂成两个子任务计算
-            int middle = (start + end) / 2;
-            ForkJoinTaskExample leftTask = new ForkJoinTaskExample(start, middle);
-            ForkJoinTaskExample rightTask = new ForkJoinTaskExample(middle + 1, end);
-
-            // 执行子任务
-            leftTask.fork();
-            rightTask.fork();
-
-            // 等待任务执行结束合并其结果
-            int leftResult = leftTask.join();
-            int rightResult = rightTask.join();
-
-            // 合并子任务
-            sum = leftResult + rightResult;
-        }
-        return sum;
-    }
-
-    public static void main(String[] args) {
-        ForkJoinPool forkjoinPool = new ForkJoinPool();
-
-        //生成一个计算任务，计算1+2+3+4...+100
-        ForkJoinTaskExample task = new ForkJoinTaskExample(1, 100);
-
-        //执行一个任务
-        Future<Integer> result = forkjoinPool.submit(task);
-
-        try {
-            log.info("result:{}", result.get());
-        } catch (Exception e) {
-            log.error("exception", e);
-        }
-    }
-}
-```
-
-
 所以对于Fork/Join框架而言，当一个任务正在等待它使用join操作创建的子任务的结束时，执行这个任务的线程（工作线程）查找其他未被执行的任务并开始它的执行。通过这种方式，线程充分利用它们的运行时间，从而提高了应用程序的性能。
 
 为实现这个目标，Fork/Join框架执行的任务有以下**局限性**：
@@ -280,3 +207,70 @@ Fork/Join框架的核心主要是以下两个类：
 + `ForkJoinPool`：它实现ExecutorService接口和work-stealing算法。它管理工作线程和提供关于任务的状态和它们执行的信息。
 + `ForkJoinTask`： 它是将在ForkJoinPool中执行的任务的基类。它提供在任务中执行fork()和join()操作的机制，并且这两个方法控制任务的状态。通常， 为了实现你的Fork/Join任务，你将实现两个子类的子类的类：RecursiveAction对于没有返回结果的任务和RecursiveTask 对于返回结果的任务。
 
+
+#### 代码示例
+
+```java
+package com.huawei.l00379880.mythread.Chapter07JUCMore.Section3ForkJoin;
+
+import java.util.concurrent.*;
+
+/***********************************************************
+ * @note      : Fork-Join使用示例，完成1+2+3+4...+n的计算
+ * @author    : l00379880 梁山广
+ * @version   : V1.0 at 2019/9/4 11:18
+ ***********************************************************/
+public class ForkJoinTaskExample extends RecursiveTask<Integer> {
+    private static final int THRESHHOLD = 2;
+    private int start;
+    private int end;
+
+    public ForkJoinTaskExample(int start, int end) {
+        this.start = start;
+        this.end = end;
+    }
+
+
+    @Override
+    protected Integer compute() {
+        int sum = 0;
+
+        // 如果任务足够小就直接计算任务
+        boolean canCompute = (end - start) <= THRESHHOLD;
+        if (canCompute) {
+            for (int i = start; i <= end; i++) {
+                sum += i;
+            }
+        } else {
+            // 如果任务大于阈值，就分裂成两个子任务计算
+            int middle = (start + end) / 2;
+            ForkJoinTaskExample lesfTask = new ForkJoinTaskExample(start, middle);
+            ForkJoinTaskExample rightTask = new ForkJoinTaskExample(middle + 1, end);
+
+            // 执行子任务
+            lesfTask.fork();
+            rightTask.fork();
+
+            // 等待子任务执行结束合并其结果
+            int leftResult = lesfTask.join();
+            int rightResult = rightTask.join();
+
+            // 合并子任务
+            sum = leftResult + rightResult;
+        }
+        return sum;
+    }
+
+    public static void main(String[] args) throws ExecutionException, InterruptedException {
+        ForkJoinPool forkJoinPool = new ForkJoinPool();
+
+        // 生成一个计算任务, 计算1+2+3+4...+100
+        ForkJoinTaskExample task = new ForkJoinTaskExample(1, 100);
+
+        // 执行一个任务
+        Future<Integer> result = forkJoinPool.submit(task);
+        // 阻塞等待计算完毕
+        System.out.println("并行计算结果是："+result.get());
+    }
+}
+```
