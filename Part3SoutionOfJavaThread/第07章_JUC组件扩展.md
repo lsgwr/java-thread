@@ -274,3 +274,20 @@ public class ForkJoinTaskExample extends RecursiveTask<Integer> {
     }
 }
 ```
+
+## 7.5 BlockingQueue
+
+在新增的Concurrent包中，BlockingQueue很好的解决了多线程中，如何高效安全“传输”数据的问题，从名字也可以知道它是线程安全的。通过这些高效并且线程安全的队列类，为我们快速搭建高质量的多线程程序带来极大的便利。
+
+首先，最基本的来说， BlockingQueue 是一个先进先出的队列（Queue），为什么说是阻塞（Blocking）的呢？是因为 BlockingQueue 支持当获取队列元素但是队列为空时，会阻塞等待队列中有元素再返回；也支持添加元素时，如果队列已满，那么等到队列可以放入新元素时再放入。所以 BlockingQueue 主要应用于生产者消费者场景。
+
+![BlockingQueue原理图](images/Chapter07JUCMore/BlockingQueue原理图.png)
+
+BlockingQueue 是一个接口，继承自 Queue，所以其实现类也可以作为 Queue 的实现来使用，而 Queue 又继承自 Collection 接口。
+BlockingQueue 对插入操作、移除操作、获取元素操作提供了四种不同的方法用于不同的场景中使用，总结如下表：
+
+| -       | Throws exception | Special value | Blocks         | Times out            |
+| ------- | ---------------- | ------------- | -------------- | -------------------- |
+| Insert  | add(e)           | offer(e)      | put(e)         | offer(e, time, unit) |
+| Insert  | remove()         | poll()        | take()         | poll(time, unit)     |
+| Examine | element()        | peek()        | not applicable | not applicable       |
