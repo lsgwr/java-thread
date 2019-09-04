@@ -128,18 +128,27 @@ ThreadPoolExecutor(int corePoolSize, int maximumPoolSize, long keepAliveTime, Ti
 ### newCachedThreadPool使用示例：
 
 ```java
-@Slf4j
-public class ThreadPoolExample1 {
+/***********************************************************
+ * @note      : 创建一个可缓存线程池，如果线程池长度超过处理需要，可灵活回收空闲线程，若无可回收，则新建线程
+ * @author    : l00379880 梁山广
+ * @version   : V1.0 at 2019/9/4 16:31
+ ***********************************************************/
+public class ExecutorsNewCachedThreadPoolDemo {
     public static void main(String[] args) {
-        ExecutorService executorService = Executors.newCachedThreadPool();
-        // 若需使用ThreadPoolExecutor里的方法，则需要进行强转
-//        ThreadPoolExecutor executorService = (ThreadPoolExecutor) Executors.newCachedThreadPool();
+        ExecutorService exec = Executors.newCachedThreadPool();
+        // 若使用ThreadPoolExecutor里的方法，则需要进行强转
+        // ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newCachedThreadPool();
 
         for (int i = 0; i < 10; i++) {
             final int index = i;
-            executorService.execute(() -> log.info("task: {}", index));
+            exec.execute(new Runnable() {
+                @Override
+                public void run() {
+                    System.out.println("task:" + index);
+                }
+            });
         }
-        executorService.shutdown();
+        exec.shutdown();
     }
 }
 ```
@@ -147,33 +156,27 @@ public class ThreadPoolExample1 {
 ### newFixedThreadPool使用示例：
 
 ```java
-@Slf4j
-public class ThreadPoolExample2 {
+/***********************************************************
+ * @note      : 创建一个定长线程池，可控制线程最大并发数，超出的线程会在队列中等待
+ * @author    : l00379880 梁山广
+ * @version   : V1.0 at 2019/9/4 16:31
+ ***********************************************************/
+public class ExecutorsNewFixedThreadPoolDemo {
     public static void main(String[] args) {
-        ExecutorService executorService = Executors.newFixedThreadPool(3);
+        ExecutorService exec = Executors.newFixedThreadPool(3);
+        // 若使用ThreadPoolExecutor里的方法，则需要进行强转
+        // ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool();
 
         for (int i = 0; i < 10; i++) {
             final int index = i;
-            executorService.execute(() -> log.info("task: {}", index));
+            exec.execute(new Runnable() {
+                @Override
+                public void run() {
+                    System.out.println("task:" + index);
+                }
+            });
         }
-        executorService.shutdown();
-    }
-}
-```
-
-### newSingleThreadExecutor使用示例：
-
-```java
-@Slf4j
-public class ThreadPoolExample3 {
-    public static void main(String[] args) {
-        ExecutorService executorService = Executors.newSingleThreadExecutor();
-
-        for (int i = 0; i < 10; i++) {
-            final int index = i;
-            executorService.execute(() -> log.info("task: {}", index));
-        }
-        executorService.shutdown();
+        exec.shutdown();
     }
 }
 ```
@@ -181,21 +184,73 @@ public class ThreadPoolExample3 {
 ### newScheduledThreadPool使用示例：
 
 ```java
+/***********************************************************
+ * @note      : 创建一个定长线程池，支持定时及周期性任务执行
+ * @author    : l00379880 梁山广
+ * @version   : V1.0 at 2019/9/4 16:31
+ ***********************************************************/
 @Slf4j
-public class ThreadPoolExample4 {
+public class ExecutorsNewScheduledThreadPoolDemo {
     public static void main(String[] args) {
-        ScheduledExecutorService executorService = Executors.newScheduledThreadPool(3);
+        ScheduledExecutorService exec = Executors.newScheduledThreadPool(3);
+        // 若使用ThreadPoolExecutor里的方法，则需要进行强转
+        // ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newScheduledThreadPool();
 
-        // 延迟3秒执行
-        executorService.schedule(() -> log.info("Scheduled run"), 3, TimeUnit.SECONDS);
+        // 延迟3s执行
+        exec.schedule(() -> log.info("schedule......"), 3, TimeUnit.SECONDS);
 
-        // 以指定的速率执行任务，这里是每隔3秒执行一次任务
-        executorService.scheduleAtFixedRate(() -> log.info("Scheduled run"), 1, 3, TimeUnit.SECONDS);
+        // 以指定的速率执行任务，这里是每个3s执行一次人文与
+        exec.scheduleAtFixedRate(() -> log.info("scheduleAtFixedRate......"), 1, 3, TimeUnit.SECONDS);
 
-        // 以指定的延迟执行任务，这里是延迟3秒执行一次任务，使用起来和scheduleAtFixedRate基本一样
-        executorService.scheduleWithFixedDelay(() -> log.info("Scheduled run"), 1, 3, TimeUnit.SECONDS);
+        // 以指定的延迟执行任务，这里是延迟3s执行一次任务，使用起来和scheduleAtFixedRate基本一样
+        exec.scheduleWithFixedDelay(() -> log.info("scheduleWithFixedDelay......"), 1, 3, TimeUnit.SECONDS);
 
-        executorService.shutdown();
+        // 想要定时任务能正常执行，不要关闭线程池
+        // exec.shutdown();
+    }
+}
+/**
+ * 16:57:44.232 [pool-1-thread-1] INFO com.huawei.l00379880.mythread.Chapter08JUCThreadPool.ExecutorsNewScheduledThreadPoolDemo - scheduleAtFixedRate......
+ * 16:57:44.237 [pool-1-thread-1] INFO com.huawei.l00379880.mythread.Chapter08JUCThreadPool.ExecutorsNewScheduledThreadPoolDemo - scheduleWithFixedDelay......
+ * 16:57:46.161 [pool-1-thread-1] INFO com.huawei.l00379880.mythread.Chapter08JUCThreadPool.ExecutorsNewScheduledThreadPoolDemo - schedule......
+ * 16:57:47.025 [pool-1-thread-2] INFO com.huawei.l00379880.mythread.Chapter08JUCThreadPool.ExecutorsNewScheduledThreadPoolDemo - scheduleAtFixedRate......
+ * 16:57:47.032 [pool-1-thread-3] INFO com.huawei.l00379880.mythread.Chapter08JUCThreadPool.ExecutorsNewScheduledThreadPoolDemo - scheduleWithFixedDelay......
+ * 16:57:49.959 [pool-1-thread-1] INFO com.huawei.l00379880.mythread.Chapter08JUCThreadPool.ExecutorsNewScheduledThreadPoolDemo - scheduleAtFixedRate......
+ * 16:57:49.959 [pool-1-thread-2] INFO com.huawei.l00379880.mythread.Chapter08JUCThreadPool.ExecutorsNewScheduledThreadPoolDemo - scheduleWithFixedDelay......
+ * 16:57:52.733 [pool-1-thread-1] INFO com.huawei.l00379880.mythread.Chapter08JUCThreadPool.ExecutorsNewScheduledThreadPoolDemo - scheduleAtFixedRate......
+ * 16:57:52.741 [pool-1-thread-3] INFO com.huawei.l00379880.mythread.Chapter08JUCThreadPool.ExecutorsNewScheduledThreadPoolDemo - scheduleWithFixedDelay......
+ * 16:57:55.512 [pool-1-thread-2] INFO com.huawei.l00379880.mythread.Chapter08JUCThreadPool.ExecutorsNewScheduledThreadPoolDemo - scheduleAtFixedRate......
+ * 16:57:55.522 [pool-1-thread-1] INFO com.huawei.l00379880.mythread.Chapter08JUCThreadPool.ExecutorsNewScheduledThreadPoolDemo - scheduleWithFixedDelay......
+ * 16:57:58.291 [pool-1-thread-3] INFO com.huawei.l00379880.mythread.Chapter08JUCThreadPool.ExecutorsNewScheduledThreadPoolDemo - scheduleAtFixedRate......
+ * 16:57:58.297 [pool-1-thread-2] INFO com.huawei.l00379880.mythread.Chapter08JUCThreadPool.ExecutorsNewScheduledThreadPoolDemo - scheduleWithFixedDelay......
+ */
+```
+
+
+### newSingleThreadExecutor使用示例：
+
+```java
+/***********************************************************
+ * @note      : 创建一个单线程化的线程池，它只会用唯一的工作线程来执行任务，保证所有任务按照指定顺序(FIFO, LIFO, 优先级)执行
+ * @author    : l00379880 梁山广
+ * @version   : V1.0 at 2019/9/4 16:31
+ ***********************************************************/
+public class ExecutorsNewSingleThreadExecutorDemo {
+    public static void main(String[] args) {
+        ExecutorService exec = Executors.newSingleThreadExecutor();
+        // 若使用ThreadPoolExecutor里的方法，则需要进行强转
+        // ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newSingleThreadExecutor();
+
+        for (int i = 0; i < 10; i++) {
+            final int index = i;
+            exec.execute(new Runnable() {
+                @Override
+                public void run() {
+                    System.out.println("task:" + index);
+                }
+            });
+        }
+        exec.shutdown();
     }
 }
 ```
