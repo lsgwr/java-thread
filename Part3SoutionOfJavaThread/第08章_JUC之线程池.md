@@ -93,3 +93,200 @@ ThreadPoolExecutor(int corePoolSize, int maximumPoolSize, long keepAliveTime, Ti
 
 ## 线程池状态
 
+![线程池状态图](https://s1.51cto.com/images/blog/201810/20/c6b9c0a2336a72e5ccf7720f12b2dd06.png)
+
++ running：运行状态，能接受新提交的任务，也能处理阻塞队列中的任务
++ shutdown：关闭状态，不能处理新的任务，但却可以继续处理阻塞队列中已保存的任务。在线程池处于 RUNNING 状态时，调用 shutdown()方法会使线程池进入到该状态。（finalize() 方法在执行过程中也会调用shutdown()方法进入该状态）；
++ stop：停止状态，不能接受新任务，也不处理队列中的任务，会中断正在处理任务的线程。在线程池处于 RUNNING 或 SHUTDOWN 状态时，调用 shutdownNow() 方法会使线程池进入到该状态；
++ tidying：如果所有的任务都已终止了，workerCount (有效线程数) 为0，线程池进入该状态后会调用 terminated() 方法进入TERMINATED 状态。
++ terminated：最终状态，在terminated() 方法执行完后进入该状态，默认terminated()方法中什么也没有做。
+
+## 线程池常用方法：
+
+| 方法名                    | 描述                           |
+| ---------------------- | ---------------------------- |
+| execute()              | 提交任务，交给线程池执行                 |
+| submit()               | 提交任务，能够返回执行结果 execute+Future |
+| shutdown()             | 关闭线程池，等待任务都执行完               |
+| shutdownNow()          | 立刻关闭线程池，不等待任务执行完             |
+| getTaskCount()         | 线程池已执行和未执行的任务总数              |
+| getCompleteTaskCount() | 已完成的任务数量                     |
+| getPoolSize()          | 线程池当前的线程数量                   |
+| getActiveCount()       | 当前线程池中正在执行任务的线程数量            |
+
+## 使用Executors创建线程池
+
+上文中我们提到了可以使用Executors工具类方便的创建线程，该类中提供了四种创建线程池的方法，如下：
+
+| 方法名                     | 描述                                       |
+| ----------------------- | ---------------------------------------- |
+| newCachedThreadPool     | 创建一个可缓存线程池，如果线程池长度超过处理需要，可灵活回收空闲线程，若无可回收，则新建线程 |
+| newFixedThreadPool      | 创建一个定长线程池，可控制线程最大并发数，超出的线程会在队列中等待        |
+| newScheduledThreadPool  | 创建一个定长线程池，支持定时及周期性任务执行                   |
+| newSingleThreadExecutor | 创建一个单线程化的线程池，它只会用唯一的工作线程来执行任务，保证所有任务按照指定顺序(FIFO, LIFO, 优先级)执行 |
+
+### newCachedThreadPool使用示例：
+
+```java
+@Slf4j
+public class ThreadPoolExample1 {
+    public static void main(String[] args) {
+        ExecutorService executorService = Executors.newCachedThreadPool();
+        // 若需使用ThreadPoolExecutor里的方法，则需要进行强转
+//        ThreadPoolExecutor executorService = (ThreadPoolExecutor) Executors.newCachedThreadPool();
+
+        for (int i = 0; i < 10; i++) {
+            final int index = i;
+            executorService.execute(() -> log.info("task: {}", index));
+        }
+        executorService.shutdown();
+    }
+}
+```
+
+### newFixedThreadPool使用示例：
+
+```java
+@Slf4j
+public class ThreadPoolExample2 {
+    public static void main(String[] args) {
+        ExecutorService executorService = Executors.newFixedThreadPool(3);
+
+        for (int i = 0; i < 10; i++) {
+            final int index = i;
+            executorService.execute(() -> log.info("task: {}", index));
+        }
+        executorService.shutdown();
+    }
+}
+```
+
+### newSingleThreadExecutor使用示例：
+
+```java
+@Slf4j
+public class ThreadPoolExample3 {
+    public static void main(String[] args) {
+        ExecutorService executorService = Executors.newSingleThreadExecutor();
+
+        for (int i = 0; i < 10; i++) {
+            final int index = i;
+            executorService.execute(() -> log.info("task: {}", index));
+        }
+        executorService.shutdown();
+    }
+}
+```
+
+### newScheduledThreadPool使用示例：
+
+```java
+@Slf4j
+public class ThreadPoolExample4 {
+    public static void main(String[] args) {
+        ScheduledExecutorService executorService = Executors.newScheduledThreadPool(3);
+
+        // 延迟3秒执行
+        executorService.schedule(() -> log.info("Scheduled run"), 3, TimeUnit.SECONDS);
+
+        // 以指定的速率执行任务，这里是每隔3秒执行一次任务
+        executorService.scheduleAtFixedRate(() -> log.info("Scheduled run"), 1, 3, TimeUnit.SECONDS);
+
+        // 以指定的延迟执行任务，这里是延迟3秒执行一次任务，使用起来和scheduleAtFixedRate基本一样
+        executorService.scheduleWithFixedDelay(() -> log.info("Scheduled run"), 1, 3, TimeUnit.SECONDS);
+
+        executorService.shutdown();
+    }
+}
+```
+
+### 关于延迟执行任务的操作，在Java中还可以使用Timer类进行实现,代码如下
+
+```java
+@Slf4j
+public class ThreadPoolExample4 {
+    public static void main(String[] args) {
+        Timer timer = new Timer();
+        // 每隔3秒执行一次任务
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                log.info("timer task run");
+            }
+        }, new Date(), 3000);
+    }
+}
+```
+
+虽然可行，但是并不建议这么使用，在多线程并行处理定时任务时，Timer运行多个TimeTask的话，只要其中之一没有捕获抛出的异常，其它任务便会自动终止运行，使用ScheduledExecutorService则没有这个问题。
+
+## 使用ThreadPoolExecutor创建线程池
+
+之前我们提到了，不建议使用Executors来创建线程池，而是使用ThreadPoolExecutor进行创建。实际上Executors里创建的也就是ThreadPoolExecutor的实例，具体的看一下Executors类的源码就知道了。
+
+接下来用一个例子演示一下如何通过ThreadPoolExecutor来创建线程池，这里使用7个参数的构造函数，示例代码如下：
+
+```java
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.lang.NonNull;
+
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
+
+/**
+ * @program: concurrency-demo
+ * @description: ThreadPoolExecutor使用示例
+ * @author: 01
+ * @create: 2018-10-20 16:35
+ **/
+@Slf4j
+public class ThreadPoolExample6 {
+    public static void main(String[] args) {
+        // 使用ArrayBlockingQueue作为其等待队列
+        BlockingQueue<Runnable> blockingQueue = new ArrayBlockingQueue<>(5);
+        // 使用自定义的ThreadFactory，目的是设置有意义的的线程名字，方便出错时回溯
+        ThreadFactory namedThreadFactory = new MyThreadFactory("test-thread");
+
+        // 创建线程池
+        ThreadPoolExecutor poolExecutor = new ThreadPoolExecutor(
+                3, 5, 1, TimeUnit.MINUTES, blockingQueue, namedThreadFactory,
+                new ThreadPoolExecutor.AbortPolicy());
+
+        // 执行任务
+        poolExecutor.execute(() -> log.info("thread run"));
+
+        // 关闭线程池
+        poolExecutor.shutdown();
+    }
+
+    private static class MyThreadFactory implements ThreadFactory {
+        private final AtomicInteger threadNumber = new AtomicInteger(1);
+        private final String namePrefix;
+
+        private MyThreadFactory(String namePrefix) {
+            this.namePrefix = namePrefix + "-";
+        }
+
+        @Override
+        public Thread newThread(@NonNull Runnable r) {
+            Thread t = new Thread(r, namePrefix + threadNumber.getAndIncrement());
+            if (t.isDaemon()) {
+                t.setDaemon(true);
+            }
+            if (t.getPriority() != Thread.NORM_PRIORITY) {
+                t.setPriority(Thread.NORM_PRIORITY);
+            }
+            return t;
+        }
+    }
+}
+```
+
+线程池的创建先介绍到这，其实大部分的创建方式可以参考Executors类的源码，所以这里就不赘述了。
+
+线程池的合理配置：
+
++ CPU密集型任务，就需要尽量压榨CPU，参考值可以设置为NCPU+1，即CPU核心数量+1
++ IO密集型任务，参考值可以设置为`2*N CPU`，即CPU核心数量的2倍
+
+最后需要说一句，线程池虽好但并非放之四海皆准，我们应当结合实际业务场景去考虑是否使用线程池。例如当线程池内需要执行的任务很小，小到执行任务的时间和任务调度的时间很接近，这时若使用线程池反而会更慢，因为任务调度和任务管理是需要耗时的。
