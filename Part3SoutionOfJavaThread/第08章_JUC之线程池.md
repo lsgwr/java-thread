@@ -4,7 +4,7 @@
 
 平时有接触过多线程开发的小伙伴们应该都或多或少都有了解、使用过线程池，而《阿里巴巴 Java 手册》里也有一条规范：
 
-![阿里巴巴 Java 手册线程池规范](https://s1.51cto.com/images/blog/201810/20/af6f693eabfcc3ad4a47aa97339be0f9.png)
+![阿里巴巴Java手册线程池规范](images/CHapter08ThreadPool/阿里巴巴Java手册线程池规范.png)
 
 由此可见线程池的重要性，线程池对于限制应用程序中同一时刻运行的线程数很有用。因为每启动一个新线程都会有相应的性能开销，每个线程都需要给栈分配一些内存等等。
 
@@ -31,7 +31,7 @@
 
 ### 线程池类图
 
-![线程池类图](https://s1.51cto.com/images/blog/201810/20/096d98da5f6ad008ee58067ebd9bf02e.png)
+![线程池类图](images/CHapter08ThreadPool/线程池类图.png)
 
 在上边的类图中，最上层就是Executor框架，它是一个根据一组执行策略的调用调度执行和控制异步任务的框架，目的是提供一种将任务提交与任务如何运行分离开的机制。它包含了三个executor接口：
 
@@ -45,7 +45,7 @@
 
 但《阿里巴巴 Java 手册》里有一条规范指明不允许使用Executors创建线程池，具体如下：
 
-![不允许使用Executors创建线程池](https://s1.51cto.com/images/blog/201810/20/94bb13442f93dbe806f8376c7562027f.png)
+![不允许使用Executors创建线程池](images/CHapter08ThreadPool/不允许使用Executors创建线程池.png)
 
 ## 构造函数解析
 
@@ -72,7 +72,7 @@ ThreadPoolExecutor(int corePoolSize, int maximumPoolSize, long keepAliveTime, Ti
 
 ### 拒绝策略的实现类都在TreadPoolExecutor中：
 
-![拒绝策略的实现类](https://s1.51cto.com/images/blog/201810/20/6516174d307959d57ba03e55eb34e661.png)
+![拒绝策略的实现类](images/CHapter08ThreadPool/拒绝策略的实现类.png)
 
 ### 我们来说一下其中corePoolSize、maximumPoolSize、workQueue 这三个参数的关系：
 
@@ -93,7 +93,7 @@ ThreadPoolExecutor(int corePoolSize, int maximumPoolSize, long keepAliveTime, Ti
 
 ## 线程池状态
 
-![线程池状态图](https://s1.51cto.com/images/blog/201810/20/c6b9c0a2336a72e5ccf7720f12b2dd06.png)
+![线程池状态图](images/CHapter08ThreadPool/线程池状态图.png)
 
 + running：运行状态，能接受新提交的任务，也能处理阻塞队列中的任务
 + shutdown：关闭状态，不能处理新的任务，但却可以继续处理阻塞队列中已保存的任务。在线程池处于 RUNNING 状态时，调用 shutdown()方法会使线程池进入到该状态。（finalize() 方法在执行过程中也会调用shutdown()方法进入该状态）；
