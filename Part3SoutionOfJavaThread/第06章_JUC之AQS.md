@@ -616,3 +616,269 @@ boolean hasWaiters(Condition condition)  // 是否存在指定Condition的线程
 boolean isFair()   // 是否使用的是公平锁
 ```
 
+## 6.6 Condition、ReentrantReadWriteLock、StampedLock
+
+### Condition
+
+Condition是一个多线程间协调通信的工具类，使得`某个或者某些线程一起等待某个条件(Condition)`，只有当该条件具备(signal 或者 signalAll方法被调用)时 ，这些等待线程才会被唤醒，从而重新争夺锁。
+
+Condition可以非常灵活的操作线程的唤醒，下面是一个线程等待与唤醒的例子，其中用1、2、3、4序号标出了日志输出顺序：
+
+```java
+/***********************************************************
+ * @Description : 某个或者某些线程一起等待某个条件(Condition)
+ * @author      : 梁山广(Liang Shan Guang)
+ * @date        : 2019/9/4 07:44
+ * @email       : liangshanguang2@gmail.com
+ ***********************************************************/
+package com.huawei.l00379880.mythread.Chapter06AQS.Section6ConditionRWStamped;
+
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.ReentrantLock;
+
+public class ConditionExample {
+    public static void main(String[] args) {
+        ReentrantLock reentrantLock = new ReentrantLock();
+        Condition condition = reentrantLock.newCondition();
+
+        // 线程1
+        new Thread(() -> {
+            try {
+                // 线程1调用了lock方法，这时线程1就会加入到了AQS的等待队里面去
+                reentrantLock.lock();
+                // 1 等待信号
+                System.out.println("线程1等待信号......");
+                // 调用await方法后，线程1就会从AQS队列里移除，这里其实就已经释放了锁，然后线程1会马上进入到condition队列里面去，等待一个信号
+                condition.await();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            System.out.println("线程1收到信号！");
+            // 线程1释放锁，整个执行过程完毕！
+            reentrantLock.unlock();
+        }).start();
+
+        new Thread(() -> {
+            // 由于线程1中调用了await释放了锁的关系，所以线程2就会被唤醒获取到锁，加入到AQS等待队列中
+            reentrantLock.lock();
+            // 2 获取锁
+            System.out.println("线程1获取锁");
+            try {
+                Thread.sleep(3000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            // 调用signalAll发送信号的方法，此时condition等待队列里线程1所在的节点元素就会被取出，然后重新放到AQS等待队列里（注意此时线程1还没有被唤醒）
+            condition.signalAll();
+            // 3 发送信号
+            System.out.println("线程2发送信号");
+            // 线程2释放锁，这时候AQS队列中只剩下线程1，然后AQS会按照从头到尾的顺序唤醒线程，于是线程1开始执行
+            reentrantLock.unlock();
+        }).start();
+    }
+}
+```
+
+可以看到，整个协调通信的过程是靠线程所在的节点在AQS的等待队列和condition的等待队列中来回移动实现的。condition作为一个条件类很好的维护了一个等待信号的队列，并在signal 或者 signalAll方法被调用后，将等待的线程节点重新放回AQS的等待队列中，从而实现唤醒线程的操作。
+
+### ReentrantReadWriteLock
+
+ReentrantReadWriteLock是Lock的另一种实现方式，我们已经知道了ReentrantLock是一个排他锁，同一时间只允许一个线程访问，而ReentrantReadWriteLock允许多个读线程同时访问，但不允许写线程和读线程、写线程和写线程同时访问。在没有任何读写锁的时候才能取得写入的锁，可用于实现悲观读取。相对于排他锁，提高了并发性。在实际应用中，大部分情况下对共享数据（如缓存）的访问都是读操作远多于写操作，这时ReentrantReadWriteLock能够提供比排他锁更好的并发性和吞吐量，所以读写锁适用于读多写少的情况。但读多写少的场景下可能会令写入线程遭遇饥饿，即写入线程迟迟无法获取到锁资源而处于等待状态。
+
+与互斥锁相比，使用读写锁能否提升性能则取决于读写操作期间读取数据相对于修改数据的频率，以及数据的争用——即在同一时间试图对该数据执行读取或写入操作的线程数。
+
+读写锁内部维护了两个锁，一个用于读操作，一个用于写操作。所有 ReadWriteLock实现都必须保证 writeLock操作的内存同步效果也要保持与相关 readLock的联系。也就是说，成功获取读锁的线程会看到写入锁之前版本所做的所有更新。
+
+ReentrantReadWriteLock支持以下功能：
+
++ 1.非公平模式（默认）：连续竞争的非公平锁可能无限期地推迟一个或多个reader或writer线程，但吞吐量通常要高于公平锁。
++ 2.公平模式：线程利用一个近似到达顺序的策略来争夺进入。当释放当前保持的锁时，可以为等待时间最长的单个writer线程分配写入锁，如果有一组等待时间大于所有正在等待的writer线程的reader，将为该组分配读者锁。试图获得公平写入锁的非重入的线程将会阻塞，除非读取锁和写入锁都自由（这意味着没有等待线程）。
++ 3.支持可重入。读线程在获取了读锁后还可以获取读锁；写线程在获取了写锁之后既可以再次获取写锁又可以获取读锁
++ 4.还允许从写入锁降级为读取锁，其实现方式是：先获取写入锁，然后获取读取锁，最后释放写入锁。但是，从读取锁升级到写入锁是不允许的
++ 5.读取锁和写入锁都支持锁获取期间的中断
++ 6.Condition支持。仅写入锁提供了一个 Conditon 实现；读取锁不支持 Conditon ，readLock().newCondition() 会抛出 UnsupportedOperationException。
++ 7.监测：此类支持一些确定是读取锁还是写入锁的方法。这些方法设计用于监视系统状态，而不是同步控制。
+
+例如我现在有一个类，里面有一个map集合，我们都知道操作map时都是读多写少的，所以我希望在对其读写的时候能够进行一些线程安全的保护，这时我们就可以使用到ReentrantReadWriteLock。示例代码如下
+
+
+```java
+/***********************************************************
+ * @Description : ReentrantReadWriteLock读写锁测试
+ * @author      : 梁山广(Liang Shan Guang)
+ * @date        : 2019/9/4 08:03
+ * @email       : liangshanguang2@gmail.com
+ ***********************************************************/
+package com.huawei.l00379880.mythread.Chapter06AQS.Section6ConditionRWStamped;
+
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+
+public class ReadWriteLockExample {
+    private final Map<String, Data> map = new TreeMap<>();
+    private final ReentrantReadWriteLock readWriteLock = new ReentrantReadWriteLock();
+    private final Lock readLock = readWriteLock.readLock();
+    private final Lock writeLock = readWriteLock.writeLock();
+
+    public Data get(String key) {
+        // 读锁
+        readLock.lock();
+        try {
+            return map.get(key);
+        } finally {
+            readLock.unlock();
+        }
+    }
+
+    public Set<String> getAllKeys() {
+        // 读锁
+        readLock.lock();
+        try {
+            return map.keySet();
+        } finally {
+            readLock.unlock();
+        }
+    }
+
+    public Data put(String key, Data value) {
+        // 在没有任何读写锁的时候才会进行写入操作
+        writeLock.lock();
+        try {
+            return map.put(key, value);
+        } finally {
+            writeLock.unlock();
+        }
+    }
+
+    class Data {
+    }
+}
+```
+
+### StampedLock
+
+#### 原理
+
+StampedLock是Java8引入的一种新的锁机制，简单的理解，可以认为它是读写锁的一个改进版本，读写锁虽然分离了读和写的功能，使得读与读之间可以完全并发，但是读和写之间依然是冲突的，读锁会完全阻塞写锁，它使用的依然是悲观的锁策略。如果有大量的读线程，它也有可能引起写线程的饥饿。而StampedLock则提供了一种乐观的读策略，这种乐观策略的锁非常类似于无锁的操作，使得乐观锁完全不会阻塞写线程。
+
+StempedLock控制锁有三种形式，分别是`写、读、乐观读`，重点在乐观锁。一个StampedLock，状态是由版本和模式两个部分组成。锁获取的方法返回的是一个数字作为票据（Stempe），他用相应的锁状态来表示并控制相关的访问，数字0表示没有写锁被授权访问，在读锁上分为悲观读和乐观读。
+
+所谓的乐观读模式，也就是若读的操作很多，写的操作很少的情况下，你可以乐观地认为，写入与读取同时发生几率很少，因此不悲观地使用完全的读取锁定，程序可以查看读取资料之后，是否遭到写入执行的变更，再采取后续的措施（重新读取变更信息，或者抛出异常） ，这一个小小改进，可大幅度提高程序的吞吐量
+
+#### 适用场景：
+
+乐观读取模式仅用于短时间读取操作时经常能够降低竞争和提高吞吐量。当然，它的使用在本质上是脆弱的。乐观读取的区域应该只包括字段，并且在validation之后用局部变量持有它们从而在后续使用。乐观模式下读取的字段值很可能是非常不一致的，所以它应该只用于那些你熟悉如何展示数据，从而你可以不断检查一致性和调用方法validate
+
+#### 优缺点：
+
++ 1.乐观读不阻塞悲观读和写操作，有利于获得写锁
++ 2.队列头结点采用有限次数SPINS次自旋（增加开销），增加获得锁几率（因为闯入的线程会竞争锁），有效够降低上下文切换
++ 3.读模式的集合通过一个公共节点被聚集在一起（cowait链），当队列尾节点为RMODE,通过CAS方法将该节点node添加至尾节点的cowait链中，node成为cowait中的顶元素，cowait构成了一个LIFO队列。
++ 4.不支持锁重入，如果只悲观读锁和写锁，效率没有ReentrantReadWriteLock高。
+
+#### 基本使用示例：
+
+```java
+public class LockExample5 {
+    private final static StampedLock LOCK = new StampedLock();
+
+    private static void add() {
+        // 加写锁
+        long stamp = LOCK.writeLock();
+        try {
+            count++;
+        } finally {
+            // 解锁需要传入加锁时返回的stamp
+            LOCK.unlock(stamp);
+        }
+    }
+}
+```
+
+其实在StempedLock的源码中，提供了一段示例代码，但没有相应的注释，所以这里对该示例代码给出一些注释。如下：
+
+```java
+class Point {
+    private double x, y;
+    private final StampedLock sl = new StampedLock();
+
+    void move(double deltaX, double deltaY) { // an exclusively locked method
+        long stamp = sl.writeLock();
+        try {
+            x += deltaX;
+            y += deltaY;
+        } finally {
+            sl.unlockWrite(stamp);
+        }
+    }
+
+    // 乐观读锁案例
+    double distanceFromOrigin() { // A read-only method
+        long stamp = sl.tryOptimisticRead(); //获得一个乐观读锁
+        double currentX = x, currentY = y;  //将两个字段读入本地局部变量
+        if (!sl.validate(stamp)) { //检查发出乐观读锁后同时是否有其他写锁发生？
+            stamp = sl.readLock();  //如果没有，我们再次获得一个读悲观锁
+            try {
+                currentX = x; // 将两个字段读入本地局部变量
+                currentY = y; // 将两个字段读入本地局部变量
+            } finally {
+                sl.unlockRead(stamp);
+            }
+        }
+        return Math.sqrt(currentX * currentX + currentY * currentY);
+    }
+
+    // 悲观读锁案例
+    void moveIfAtOrigin(double newX, double newY) { // upgrade
+        // Could instead start with optimistic, not read mode
+        long stamp = sl.readLock();
+        try {
+            while (x == 0.0 && y == 0.0) { //循环，检查当前状态是否符合
+                long ws = sl.tryConvertToWriteLock(stamp); //将读锁转为写锁
+                if (ws != 0L) { //这是确认转为写锁是否成功
+                    stamp = ws; //如果成功 替换票据
+                    x = newX; //进行状态改变
+                    y = newY;  //进行状态改变
+                    break;
+                } else { //如果不能成功转换为写锁
+                    sl.unlockRead(stamp);  //我们显式释放读锁
+                    stamp = sl.writeLock();  //显式直接进行写锁 然后再通过循环再试
+                }
+            }
+        } finally {
+            sl.unlock(stamp); //释放读锁或写锁
+        }
+    }
+}
+```
+
+#### 性能比较
+
++ ReadWritLock相比，在一个线程情况下，是读速度其4倍左右，写是1倍
++ 六个线程情况下，读性能是其几十倍，写性能也是近10倍左右
++ 吞吐量也大幅提高
+
+### 小结
+
+StampedLock 对吞吐量有巨大的改进，特别是在读线程越来越多的场景下。但StampedLock有一个复杂的API，对于加锁操作，很容易误用其他方法。StampedLock 可以说是Lock的一个很好的补充，吞吐量以及性能上的提升足以打动很多人了，但并不是说要替代之前Lock的东西，毕竟它还是有些应用场景的，起码API比StampedLock容易入手
+
+
+## 本章总结
+
+### 总结关于锁的几个类：
+
++ synchronized：JVM实现，不但可以通过一些监控工具监控，而且在出现未知异常的时候JVM也会自动帮我们释放锁
++ ReentrantLock、ReentrantRead/WriteLock、StampedLock 他们都是对象层面的锁定，要想保证锁一定被释放，要放到finally里面，才会更安全一些。StempedLock对性能有很大的改进，特别是在读线程越来越多的情况下。
+
+### 如何使用：
+
++ 在只有少量竞争者的时候，synchronized是一个很好的锁的实现
++ 竞争者不少，但是增长量是可以预估的，ReentrantLock是一个很好的锁的通用实现（适合使用场景的才是最好的，不是越高级越好）
+
+### 参考博客
+
++ [深入理解StampedLock及其实现原理](https://blog.csdn.net/luoyuyou/article/details/30259877)
++ [ReentrantLock(重入锁)功能详解和应用演示](https://www.cnblogs.com/takumicx/p/9338983.html)
