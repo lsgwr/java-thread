@@ -7,9 +7,6 @@
 + Part3SoutionOfJavaThread: 慕课网实战课程《Java并发编程与高并发解决方案》[教程地址](https://coding.imooc.com/class/195.html)
 + Part4GuideOfJavaThreadCore :《Java多线程编程实战指南(核心篇)》
 + Part5GuideOfJavaThreadDesignPattern :《Java多线程编程实战指南(设计模式篇)
-+ Part6HeaFirstDesignPatterns:《Head First设计模式》
-+ Part7TheZenOfDesignPatterns《设计模式之禅》
-
 
 ## 参考博客
 
