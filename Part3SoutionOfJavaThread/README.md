@@ -6,6 +6,7 @@
 + [课程代码](https://git.imooc.com/coding-195/coding-195/src/master)
 + [课程思维导图](https://naotu.baidu.com/file/bfa330a4ca90158a3b408115a6579875)
 + [教师手记](https://www.imooc.com/article/25277)
++ [教师主页](http://www.imooc.com/t/5980627)
 
 ## 参考博客
 
