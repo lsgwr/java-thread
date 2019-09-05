@@ -170,7 +170,7 @@ final Entry<K,V> getEntry(Object key) {
 
 > 当 Hash 冲突严重时，在桶上形成的链表会变的越来越长，这样在查询时的效率就会越来越低；时间复杂度为 O(N)
 
-![JDK1.8中HashMap的结构图](images/Chapter09ThreadExtend/JDK1.8中HashMap%20的结构图.png)
+![JDK1.8中HashMap的结构图](images/Chapter09ThreadExtend/JDK1.8中HashMap的结构图.png)
 
 我们先来看看在1.8中HashMap几个核心的成员变量：
 
