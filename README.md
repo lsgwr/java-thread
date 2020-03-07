@@ -5,7 +5,7 @@
 
 + Part0XdClass:《51CTO上的小D课程多线程》[链接](http://edu.51cto.com/course/15466.html) `完成`
 + Part1CoreOfJavaThread :《Java多线程编程核心技术》高红岩 著 `完成`
-+ Part2ThreadInAction: [51CTO Java多线程+网银取款案例精讲](http://edu.51cto.com/course/14312.html)
++ Part2ThreadInAction: [51CTO Java多线程+网银取款案例精讲](http://edu.51cto.com/course/14312.html)`完成`
 + Part3SoutionOfJavaThread: 慕课网实战课程《Java并发编程与高并发解决方案》[教程地址](https://coding.imooc.com/class/195.html) `完成`
 
 ## 2.参考博客
