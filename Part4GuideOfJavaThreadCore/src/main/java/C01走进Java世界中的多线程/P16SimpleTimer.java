@@ -4,7 +4,7 @@
  * @date        : 2018/5/22 00:08
  * @email       : liangshanguang2@gmail.com
  ***********************************************************/
-package Chapter01WalkingIntoJavaThread;
+package C01走进Java世界中的多线程;
 
 public class P16SimpleTimer {
     private static int count;
@@ -14,8 +14,8 @@ public class P16SimpleTimer {
     }
 
     public static void main(String[] args) throws InterruptedException {
-        // 不传参默认60
-        count = args.length >= 1 ? Integer.valueOf(args[0]) : 60;
+        // 不传参默认10
+        count = args.length >= 1 ? Integer.valueOf(args[0]) : 10;
         int remaining;
         while (true) {
             remaining = countDown();
@@ -28,5 +28,17 @@ public class P16SimpleTimer {
         }
         System.out.println("Down.");
     }
-
 }
+/**
+ * Remaining : 9seconds(s)
+ * Remaining : 8seconds(s)
+ * Remaining : 7seconds(s)
+ * Remaining : 6seconds(s)
+ * Remaining : 5seconds(s)
+ * Remaining : 4seconds(s)
+ * Remaining : 3seconds(s)
+ * Remaining : 2seconds(s)
+ * Remaining : 1seconds(s)
+ * Remaining : 0seconds(s)
+ * Down.
+ */

@@ -4,11 +4,9 @@
  * @date        : 2018/5/22 23:10
  * @email       : liangshanguang2@gmail.com
  ***********************************************************/
-package Chapter02TargetAndChallenge;
+package C02多线程编程的目标与挑战;
 
 import util.Tools;
-
-import javax.print.attribute.standard.RequestingUserName;
 
 public class P35RaceConditionDemo {
 

@@ -4,7 +4,7 @@
  * @date        : 2018/5/22 00:22
  * @email       : liangshanguang2@gmail.com
  ***********************************************************/
-package Chapter01WalkingIntoJavaThread;
+package C01走进Java世界中的多线程;
 
 public class P17JavaThreadAnywhere {
     public static void main(String[] args) {
@@ -37,3 +37,10 @@ public class P17JavaThreadAnywhere {
         }
     }
 }
+/**
+ * The method is executed by thread : main
+ * The 'doSomething' method was executed by thread : main
+ * Do something with Java Thread AnyWhere
+ * The 'doSomething' method was executed by thread : Thread-0
+ * Do something with Java Thread AnyWhere
+ */

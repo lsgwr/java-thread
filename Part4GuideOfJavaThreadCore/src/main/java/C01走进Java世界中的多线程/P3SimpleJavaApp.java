@@ -4,7 +4,7 @@
  * @date        : 2018/5/21 08:21
  * @email       : liangshanguang2@gmail.com
  ***********************************************************/
-package Chapter01WalkingIntoJavaThread;
+package C01走进Java世界中的多线程;
 
 import java.util.Date;
 

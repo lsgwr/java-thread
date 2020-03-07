@@ -4,7 +4,7 @@
  * @date        : 2018/5/21 22:54
  * @email       : liangshanguang2@gmail.com
  ***********************************************************/
-package Chapter01WalkingIntoJavaThread;
+package C01走进Java世界中的多线程;
 
 import util.Tools;
 
@@ -74,3 +74,37 @@ public class P11ThreadCreateCmp {
         }
     }
 }
+/**
+ * CountingThread : 100
+ * CountingThread : 100
+ * CountingTask : 1467
+ * CountingThread : 100
+ * CountingTask : 1486
+ * CountingTask : 1497
+ * CountingThread : 100
+ * CountingThread : 100
+ * CountingTask : 1515
+ * CountingTask : 1518
+ * CountingTask : 1520
+ * CountingTask : 1529
+ * CountingTask : 1546
+ * CountingThread : 100
+ * CountingThread : 100
+ * CountingThread : 100
+ * CountingTask : 1556
+ * CountingThread : 100
+ * CountingThread : 100
+ * CountingThread : 100
+ * CountingThread : 100
+ * CountingThread : 100
+ * CountingTask : 1567
+ * CountingTask : 1574
+ * CountingThread : 100
+ * CountingThread : 100
+ * CountingTask : 1582
+ * CountingTask : 1583
+ * CountingTask : 1584
+ * CountingTask : 1585
+ * CountingThread : 100
+ * CountingTask : 1591
+ */

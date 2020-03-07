@@ -4,7 +4,7 @@
  * @date        : 2018/5/22 22:41
  * @email       : liangshanguang2@gmail.com
  ***********************************************************/
-package Chapter02TargetAndChallenge;
+package C02多线程编程的目标与挑战;
 
 public interface P34CircularSeqGenerator {
     short nextSequence();

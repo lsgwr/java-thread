@@ -4,7 +4,7 @@
  * @date        : 2018/5/23 21:28
  * @email       : liangshanguang2@gmail.com
  ***********************************************************/
-package Chapter02TargetAndChallenge;
+package C02多线程编程的目标与挑战;
 
 import util.Tools;
 
