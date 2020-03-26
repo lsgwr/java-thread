@@ -1,3 +1,5 @@
+package chapter9pool.section5RejectPolicy;
+
 import java.lang.reflect.Field;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -31,7 +33,7 @@ public class AbortPolicyDemo {
 
             // 新建10个任务，并将它们添加到线程池中。
             for (int i = 0; i < 10; i++) {
-                Runnable myrun = new MyRunnable("task-"+i);
+                Runnable myrun = new MyRunnable1("task-"+i);
                 pool.execute(myrun);
             }
         } catch (RejectedExecutionException e) {
@@ -42,9 +44,9 @@ public class AbortPolicyDemo {
     }
 }
 
-class MyRunnable implements Runnable {
+class MyRunnable1 implements Runnable {
     private String name;
-    public MyRunnable(String name) {
+    public MyRunnable1(String name) {
         this.name = name;
     }
     @Override

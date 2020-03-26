@@ -1,4 +1,4 @@
-package main.java.chapter10pool;
+package chapter9pool.section4CoreThreads;
 
 /***********************************************************
  * @note      : LinkedBlockingQueue的初始化参数会导致异常
@@ -10,6 +10,7 @@ import java.util.concurrent.*;
 
 /**
  * 线程池Demo
+ * @author pc
  */
 public class ThreadPoolDemo {
 
